@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#181E34"/>
+      <stop offset="100%" stop-color="#0E1222"/>
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="50%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#FF0033"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Circular Base -->
+  <circle cx="100" cy="100" r="96" fill="url(#bgGrad)" stroke="url(#glowGrad)" stroke-width="4"/>
+  <circle cx="100" cy="100" r="88" stroke="#8B5CF6" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.4"/>
+
+  <!-- Geometric AV Monogram -->
+  <g transform="translate(10, 0)">
+    <!-- Letter A -->
+    <path d="M50 140 L78 60 L106 140" stroke="#F5F7FF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="62" y1="112" x2="94" y2="112" stroke="url(#glowGrad)" stroke-width="7" stroke-linecap="round"/>
+
+    <!-- Letter V interlocking -->
+    <path d="M96 60 L124 140 L152 60" stroke="url(#glowGrad)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- YouTube Red Accent Icon -->
+  <circle cx="100" cy="158" r="14" fill="#111525" stroke="#FF0033" stroke-width="2"/>
+  <polygon points="96,151 107,158 96,165" fill="#FF0033"/>
+</svg>
