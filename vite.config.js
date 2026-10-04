@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  // base is set to '/' for root domain or username.github.io
-  base: '/',
+  // Base path configured for GitHub Pages repository subpath
+  base: '/abhiyukth.github.io/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

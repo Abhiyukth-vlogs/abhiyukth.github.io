@@ -1,6 +1,8 @@
 import { channelConfig } from './data/channel.js';
 import { VideoModal } from './components/videoModal.js';
 
+const FALLBACK_AVATAR = `${import.meta.env.BASE_URL}assets/avatar-fallback.svg`;
+
 /**
  * Main Application Orchestrator for Abhiyukth Vlogs
  */
@@ -118,7 +120,7 @@ class App {
           alt="${this.escapeHtml(featured.title)}" 
           class="featured-thumb-img" 
           loading="lazy"
-          onerror="this.src='/assets/avatar-fallback.svg'"
+          onerror="this.src='${FALLBACK_AVATAR}'"
         />
         <div class="thumb-play-overlay" aria-hidden="true">
           <div class="play-circle">
@@ -288,7 +290,7 @@ class App {
             alt="${this.escapeHtml(v.title)}" 
             class="video-card-thumb-img" 
             loading="lazy"
-            onerror="this.src='/assets/avatar-fallback.svg'"
+            onerror="this.src='${FALLBACK_AVATAR}'"
           />
           <span class="video-duration-badge">${v.duration || 'Video'}</span>
           <div class="video-card-play-overlay" aria-hidden="true">
@@ -374,7 +376,7 @@ class App {
             alt="${this.escapeHtml(liveData.liveTitle)}" 
             class="featured-thumb-img" 
             loading="lazy"
-            onerror="this.src='/assets/avatar-fallback.svg'"
+            onerror="this.src='${FALLBACK_AVATAR}'"
           />
           <div class="thumb-play-overlay" aria-hidden="true">
             <div class="play-circle">
@@ -472,7 +474,7 @@ class App {
             alt="${this.escapeHtml(p.title)}" 
             class="playlist-thumb-img" 
             loading="lazy"
-            onerror="this.src='/assets/avatar-fallback.svg'"
+            onerror="this.src='${FALLBACK_AVATAR}'"
           />
           <div class="playlist-overlay-badge">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
