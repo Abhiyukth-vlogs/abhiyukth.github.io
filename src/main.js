@@ -27,6 +27,7 @@ class App {
     this.renderVideoCatalog();
     this.renderLiveSection();
     this.renderPlaylists();
+    this.initLiveMilestonesCountdown();
 
     // 3. Setup Navigation & Interaction Listeners
     this.setupHeroControls();
@@ -579,6 +580,123 @@ class App {
       const year = new Date().getFullYear();
       yearEl.innerHTML = `&copy; ${year} Abhiyukth Vlogs. All verified channel content &copy; original creator.`;
     }
+  }
+
+  /* ---------------------------------------------------------
+     Live Subscriber Countdown & Community Milestones
+     Channel ID: UCuG7-r1F3b2RzGoRFIe0MnQ (@abhiyukthvlogs)
+     Target: 10,000 (10K) | Current Baseline: 5,700 (5.7K)
+     Next: 10K | Dream: 100K & 1M
+     --------------------------------------------------------- */
+  initLiveMilestonesCountdown() {
+    const container = document.getElementById('milestones-container');
+    const liveCountEl = document.getElementById('milestone-live-count');
+    const subsLeftEl = document.getElementById('milestone-subs-left');
+    const progressPctEl = document.getElementById('milestone-progress-pct');
+    const progressFillEl = document.getElementById('milestone-progress-fill');
+    const progressbarEl = document.getElementById('milestone-progressbar');
+    const heroStatSubscribers = document.getElementById('stat-subscribers');
+    const cardCurrentEl = document.getElementById('milestone-card-current');
+
+    if (!container || !liveCountEl || !subsLeftEl) return;
+
+    const channelId = channelConfig.channel?.id || 'UCuG7-r1F3b2RzGoRFIe0MnQ';
+    const targetSubscribers = 10000;
+    let currentSubscribers = channelConfig.channel?.milestones?.current || 5700;
+    let hasAnimated = false;
+
+    // Helper: update all UI counters and bars smoothly
+    const updateUI = (count) => {
+      const subsLeft = Math.max(0, targetSubscribers - count);
+      const percentage = Math.min(100, Math.max(0, (count / targetSubscribers) * 100));
+
+      liveCountEl.textContent = Number(count).toLocaleString();
+      subsLeftEl.textContent = Number(subsLeft).toLocaleString();
+      if (progressPctEl) progressPctEl.textContent = `${percentage.toFixed(1)}%`;
+      if (progressFillEl) progressFillEl.style.width = `${percentage.toFixed(1)}%`;
+      if (progressbarEl) progressbarEl.setAttribute('aria-valuenow', percentage.toFixed(0));
+
+      const formattedK = count >= 1000 ? `${(count / 1000).toFixed(1)}K` : count.toString();
+      if (cardCurrentEl) cardCurrentEl.textContent = formattedK;
+      if (heroStatSubscribers) heroStatSubscribers.textContent = `${formattedK}+`;
+    };
+
+    // Smooth count-up animation on initial view
+    const animateCountUp = (targetCount, duration = 1500) => {
+      const startCount = Math.max(0, targetCount - 700);
+      const startTime = performance.now();
+
+      const step = (now) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Exponential ease-out
+        const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        const current = Math.round(startCount + (targetCount - startCount) * ease);
+
+        updateUI(current);
+
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          updateUI(targetCount);
+        }
+      };
+
+      requestAnimationFrame(step);
+    };
+
+    // Trigger animation when milestones card scrolls into viewport
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasAnimated) {
+            hasAnimated = true;
+            animateCountUp(currentSubscribers);
+            observer.disconnect();
+          }
+        });
+      }, { threshold: 0.15 });
+      observer.observe(container);
+    } else {
+      animateCountUp(currentSubscribers);
+    }
+
+    // Attempt to query real-time subscriber count with safe fallback
+    const fetchLiveCount = async () => {
+      try {
+        const endpoints = [
+          `https://api.subscribercounter.nl/api/youtube-subscriber-count/${channelId}/data`,
+          `https://mixerno.space/api/youtube-channel-counter/user/${channelId}`
+        ];
+
+        for (const url of endpoints) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 4000);
+            const res = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+              const data = await res.json();
+              const fetchedCount = Number(data?.counts?.[0]?.value || data?.counts?.[2]?.value || data?.subscriberCount || data?.estSubCount);
+              if (fetchedCount && fetchedCount >= 5000 && fetchedCount <= 50000000) {
+                currentSubscribers = fetchedCount;
+                updateUI(currentSubscribers);
+                return;
+              }
+            }
+          } catch (innerErr) {
+            // Gracefully ignore and try next source
+          }
+        }
+      } catch (err) {
+        // Safe baseline remains active
+      }
+    };
+
+    // Fetch on load and gentle refresh every 60s
+    fetchLiveCount();
+    setInterval(fetchLiveCount, 60000);
   }
 
   /* ---------------------------------------------------------

@@ -496,19 +496,91 @@
                 From long train rides across India (Mangala Lakshadweep Express, Jammu &amp; Kashmir journeys, Rajasthan) to local temple festivals and Kozhikode walkathons, this channel is about celebrating real stories, good games, and unforgettable adventures.
               </p>
 
-              <!-- Milestones / Goals Progress -->
-              <div class="milestones-wrap">
+              <!-- Milestones / Goals Progress & Live Countdown -->
+              <div class="milestones-wrap" id="milestones-container">
                 <div class="milestones-header">
-                  <span class="milestones-title">Community Milestones</span>
-                  <span class="milestones-stat">Target: 10K Subscribers</span>
+                  <div class="milestones-title-group">
+                    <span class="milestones-title">Community Milestones</span>
+                    <span class="live-pulse-badge" title="Live subscriber tracking active">
+                      <span class="live-dot"></span>
+                      <span class="live-text">LIVE COUNTDOWN</span>
+                    </span>
+                  </div>
+                  <span class="milestones-stat" id="milestones-target-badge">Target: 10K Subscribers</span>
                 </div>
-                <div class="progress-bar-bg" role="progressbar" aria-valuenow="57" aria-valuemin="0" aria-valuemax="100" aria-label="Subscriber goal progress">
-                  <div class="progress-bar-fill" style="width: 57%;"></div>
+
+                <!-- Live Count & Countdown Showcase Banner -->
+                <div class="milestone-live-banner">
+                  <div class="live-count-stat">
+                    <span class="live-count-label">Current Subscribers</span>
+                    <div class="live-count-display">
+                      <span class="live-count-number" id="milestone-live-count">5,700</span>
+                      <span class="live-count-plus">+</span>
+                    </div>
+                  </div>
+
+                  <div class="live-countdown-card">
+                    <span class="countdown-eyebrow">ROAD TO 10K</span>
+                    <div class="countdown-val-wrap">
+                      <span class="countdown-number" id="milestone-subs-left">4,300</span>
+                      <span class="countdown-unit">subs to go!</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="milestones-labels">
-                  <span>Current: 5.7K</span>
-                  <span>Next: 10K</span>
-                  <span>Dream: 100K &amp; 1M</span>
+
+                <!-- Animated Progress Bar to 10K -->
+                <div class="milestone-progress-header">
+                  <span class="progress-label-text">Progress to 10K Milestone</span>
+                  <span class="progress-percentage" id="milestone-progress-pct">57.0%</span>
+                </div>
+                <div class="progress-bar-bg" role="progressbar" id="milestone-progressbar" aria-valuenow="57" aria-valuemin="0" aria-valuemax="100" aria-label="Subscriber goal progress to 10K">
+                  <div class="progress-bar-fill" id="milestone-progress-fill" style="width: 57%;">
+                    <span class="progress-shimmer"></span>
+                  </div>
+                </div>
+
+                <!-- Milestones Roadmap: Current, Next, Dream -->
+                <div class="milestones-grid">
+                  <div class="milestone-step-card current">
+                    <div class="step-tag">CURRENT</div>
+                    <div class="step-value" id="milestone-card-current">5.7K</div>
+                    <div class="step-desc">Active Community</div>
+                  </div>
+                  <div class="milestone-step-card next">
+                    <div class="step-tag">NEXT TARGET</div>
+                    <div class="step-value">10K</div>
+                    <div class="step-desc">Next Milestone 🎯</div>
+                  </div>
+                  <div class="milestone-step-card dream">
+                    <div class="step-tag">DREAM</div>
+                    <div class="step-value">100K &amp; 1M</div>
+                    <div class="step-desc">Silver &amp; Gold 🏆</div>
+                  </div>
+                </div>
+
+                <!-- Subscribe CTA to Help Reach Milestone -->
+                <div class="milestone-cta-footer">
+                  <a 
+                    href="https://www.youtube.com/@abhiyukthvlogs?sub_confirmation=1" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    class="btn btn-subscribe-milestone"
+                    id="milestone-sub-btn"
+                  >
+                    <svg class="icon-yt" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    <span>Subscribe to Boost the Count</span>
+                  </a>
+                  <a 
+                    href="https://www.youtube.com/@abhiyukthvlogs" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    class="milestone-yt-link"
+                    title="Visit official YouTube channel"
+                  >
+                    View on YouTube &rarr;
+                  </a>
                 </div>
               </div>
             </div>

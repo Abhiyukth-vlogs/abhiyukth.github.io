@@ -18,21 +18,33 @@ export const channelConfig = {
     bio: 'Welcome to Abhiyukth Vlogs! Based in Kerala, India, bringing you thrilling PS5 gameplay streams, spontaneous travel diaries across the country (train journeys from Kozhikode to Kashmir and Maharashtra, local festivals, walkathons), and unfiltered real-life moments.',
     uploadNote: 'Long videos, PS5 streams & daily shorts with community celebrations.',
     
+    // Channel ID from YouTube Analytics / Studio
+    id: 'UCuG7-r1F3b2RzGoRFIe0MnQ',
+    
     // Verified Channel Stats (as of inspection)
     stats: {
       subscribers: '5.7K',
+      subscribersCount: 5700,
       subscribersFull: '5,700+',
       videosCount: '608+',
       totalViews: '2.3M+',
       yearsActive: '4+'
     },
 
-    // Creator Goals
-    milestones: [
-      { goal: '10K', label: 'Subscribers (Current Target)', reached: false, progress: 57 },
-      { goal: '100K', label: 'Silver Play Button', reached: false, progress: 5.7 },
-      { goal: '1M', label: 'Gold Play Button Dream', reached: false, progress: 0.57 }
-    ]
+    // Creator Goals & Countdown Milestones
+    milestones: {
+      target: 10000,
+      targetFormatted: '10K',
+      current: 5700,
+      currentFormatted: '5.7K',
+      next: '10K',
+      dream: '100K & 1M',
+      goals: [
+        { goal: '10K', label: 'Subscribers (Next Target)', reached: false, progress: 57 },
+        { goal: '100K', label: 'Silver Play Button', reached: false, progress: 5.7 },
+        { goal: '1M', label: 'Gold Play Button Dream', reached: false, progress: 0.57 }
+      ]
+    }
   },
 
   // Social & External Links
