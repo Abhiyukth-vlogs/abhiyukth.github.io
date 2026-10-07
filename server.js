@@ -54,8 +54,8 @@ app.get('/api/subscribers', async (req, res) => {
     return res.status(200).json({
       success: false,
       message: 'YOUTUBE_API_KEY is not configured in .env',
-      subscriberCount: 5700,
-      subscriberCountFormatted: '5,700',
+      subscriberCount: 5709,
+      subscriberCountFormatted: '5,709',
       viewsCount: '2.3M+',
       videosCount: '608+'
     });
@@ -82,7 +82,7 @@ app.get('/api/subscribers', async (req, res) => {
 
     const channel = items[0];
     const stats = channel.statistics;
-    const rawSubscribers = Number(stats.subscriberCount) || 5700;
+    const rawSubscribers = Math.max(Number(stats.subscriberCount) || 5709, 5709);
     const rawViews = Number(stats.viewCount) || 0;
     const rawVideos = Number(stats.videoCount) || 0;
 
@@ -127,8 +127,8 @@ app.get('/api/subscribers', async (req, res) => {
     return res.status(200).json({
       success: false,
       error: errorMsg,
-      subscriberCount: 5700,
-      subscriberCountFormatted: '5,700',
+      subscriberCount: 5709,
+      subscriberCountFormatted: '5,709',
       viewCountFormatted: '2,350,000+',
       videoCountFormatted: '608+'
     });

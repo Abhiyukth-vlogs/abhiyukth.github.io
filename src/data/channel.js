@@ -24,8 +24,8 @@ export const channelConfig = {
     // Verified Channel Stats (as of inspection)
     stats: {
       subscribers: '5.7K',
-      subscribersCount: 5700,
-      subscribersFull: '5,700+',
+      subscribersCount: 5709,
+      subscribersFull: '5,709+',
       videosCount: '608+',
       totalViews: '2.3M+',
       yearsActive: '4+'
@@ -35,13 +35,13 @@ export const channelConfig = {
     milestones: {
       target: 10000,
       targetFormatted: '10K',
-      current: 5700,
+      current: 5709,
       currentFormatted: '5.7K',
       next: '10K',
       dream: '100K & 1M',
       goals: [
-        { goal: '10K', label: 'Subscribers (Next Target)', reached: false, progress: 57 },
-        { goal: '100K', label: 'Silver Play Button', reached: false, progress: 5.7 },
+        { goal: '10K', label: 'Subscribers (Next Target)', reached: false, progress: 57.1 },
+        { goal: '100K', label: 'Silver Play Button', reached: false, progress: 5.71 },
         { goal: '1M', label: 'Gold Play Button Dream', reached: false, progress: 0.57 }
       ]
     }

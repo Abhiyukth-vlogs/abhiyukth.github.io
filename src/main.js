@@ -586,7 +586,7 @@ class App {
   /* ---------------------------------------------------------
      Live Subscriber Countdown & Community Milestones
      Channel ID: UCuG7-r1F3b2RzGoRFIe0MnQ (@abhiyukthvlogs)
-     Target: 10,000 (10K) | Current Baseline: 5,700 (5.7K)
+     Target: 10,000 (10K) | Current Baseline: 5,709 (5.7K)
      Next: 10K | Dream: 100K & 1M
      --------------------------------------------------------- */
   initLiveMilestonesCountdown() {
@@ -608,7 +608,7 @@ class App {
 
     const channelId = channelConfig.channel?.id || 'UCuG7-r1F3b2RzGoRFIe0MnQ';
     const targetSubscribers = 10000;
-    let currentSubscribers = channelConfig.channel?.milestones?.current || 5700;
+    let currentSubscribers = channelConfig.channel?.milestones?.current || 5709;
     let hasAnimated = false;
 
     // Set initial static values before scroll animation
@@ -676,7 +676,7 @@ class App {
                 data?.estSubCount
               );
               if (fetchedCount && fetchedCount >= 5000 && fetchedCount <= 50000000) {
-                currentSubscribers = fetchedCount;
+                currentSubscribers = Math.max(fetchedCount, 5709);
                 updateUI(currentSubscribers, true);
                 return;
               }
