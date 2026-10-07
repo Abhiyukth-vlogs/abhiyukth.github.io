@@ -1542,6 +1542,124 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 2px 8px var(--accent-cyan-glow);
 }
 
+/* Live Subscriber Counter Badge under Profile Avatar */
+.about-live-sub-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(255, 0, 51, 0.08), rgba(139, 92, 246, 0.1));
+  border: 1px solid rgba(255, 0, 51, 0.24);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), 0 0 16px rgba(255, 0, 51, 0.12);
+  width: 100%;
+  max-width: 250px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.about-live-sub-card:hover {
+  border-color: rgba(255, 0, 51, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4), 0 0 24px rgba(255, 0, 51, 0.22);
+}
+
+.live-sub-badge-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #FF0033;
+  box-shadow: 0 0 8px #FF0033;
+  animation: liveBeaconPulse 1.8s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes liveBeaconPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+    box-shadow: 0 0 8px #FF0033;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.75;
+    box-shadow: 0 0 16px #FF0033, 0 0 22px rgba(255, 0, 51, 0.6);
+  }
+}
+
+.live-sub-badge-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #FF4E6B;
+  text-transform: uppercase;
+}
+
+.live-sub-counter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.live-sub-yt-icon {
+  color: #FF0033;
+  filter: drop-shadow(0 0 8px rgba(255, 0, 51, 0.45));
+}
+
+.live-sub-numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.live-sub-number-val {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.live-sub-plus-sign {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.live-sub-subscribe-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #FF0033, #CC0029);
+  color: #ffffff;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 2px 10px rgba(255, 0, 51, 0.35);
+  transition: all var(--transition-fast);
+  margin-top: 2px;
+}
+
+.live-sub-subscribe-link:hover {
+  background: linear-gradient(135deg, #FF1A47, #E60030);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(255, 0, 51, 0.55);
+  color: #ffffff;
+}
+
 .about-social-pills {
   display: flex;
   flex-wrap: wrap;

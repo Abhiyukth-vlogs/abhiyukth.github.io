@@ -597,6 +597,7 @@ class App {
     const progressbarEl = document.getElementById('milestone-progressbar');
     const heroStatSubscribers = document.getElementById('stat-subscribers');
     const cardCurrentEl = document.getElementById('milestone-card-current');
+    const aboutLiveSubEl = document.getElementById('about-live-sub-counter');
 
     if (!container || !liveCountEl || !subsLeftEl) return;
 
@@ -612,6 +613,7 @@ class App {
 
       liveCountEl.textContent = Number(count).toLocaleString();
       subsLeftEl.textContent = Number(subsLeft).toLocaleString();
+      if (aboutLiveSubEl) aboutLiveSubEl.textContent = Number(count).toLocaleString();
       if (progressPctEl) progressPctEl.textContent = `${percentage.toFixed(1)}%`;
       if (progressFillEl) progressFillEl.style.width = `${percentage.toFixed(1)}%`;
       if (progressbarEl) progressbarEl.setAttribute('aria-valuenow', percentage.toFixed(0));
