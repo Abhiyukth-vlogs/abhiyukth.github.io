@@ -1,5 +1,6 @@
 import { channelConfig } from './data/channel.js';
 import { VideoModal } from './components/videoModal.js';
+import { Odometer } from './components/odometer.js';
 
 const FALLBACK_AVATAR = `${import.meta.env.BASE_URL}assets/avatar-fallback.svg`;
 
@@ -601,19 +602,29 @@ class App {
 
     if (!container || !liveCountEl || !subsLeftEl) return;
 
+    // Initialize 3D Rolling Digit Odometers
+    const milestoneOdometer = new Odometer(liveCountEl, { duration: 950, stagger: 55 });
+    const aboutOdometer = aboutLiveSubEl ? new Odometer(aboutLiveSubEl, { duration: 900, stagger: 45 }) : null;
+
     const channelId = channelConfig.channel?.id || 'UCuG7-r1F3b2RzGoRFIe0MnQ';
     const targetSubscribers = 10000;
     let currentSubscribers = channelConfig.channel?.milestones?.current || 5700;
     let hasAnimated = false;
 
+    // Set initial static values before scroll animation
+    milestoneOdometer.update(currentSubscribers, false);
+    if (aboutOdometer) aboutOdometer.update(currentSubscribers, false);
+
     // Helper: update all UI counters and bars smoothly
-    const updateUI = (count) => {
+    const updateUI = (count, animateOdometer = true) => {
       const subsLeft = Math.max(0, targetSubscribers - count);
       const percentage = Math.min(100, Math.max(0, (count / targetSubscribers) * 100));
 
-      liveCountEl.textContent = Number(count).toLocaleString();
+      // 3D Rolling Digit update
+      milestoneOdometer.update(count, animateOdometer);
+      if (aboutOdometer) aboutOdometer.update(count, animateOdometer);
+
       subsLeftEl.textContent = Number(subsLeft).toLocaleString();
-      if (aboutLiveSubEl) aboutLiveSubEl.textContent = Number(count).toLocaleString();
       if (progressPctEl) progressPctEl.textContent = `${percentage.toFixed(1)}%`;
       if (progressFillEl) progressFillEl.style.width = `${percentage.toFixed(1)}%`;
       if (progressbarEl) progressbarEl.setAttribute('aria-valuenow', percentage.toFixed(0));
@@ -623,50 +634,28 @@ class App {
       if (heroStatSubscribers) heroStatSubscribers.textContent = `${formattedK}+`;
     };
 
-    // Smooth count-up animation on initial view
-    const animateCountUp = (targetCount, duration = 1500) => {
-      const startCount = Math.max(0, targetCount - 700);
-      const startTime = performance.now();
-
-      const step = (now) => {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        // Exponential ease-out
-        const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-        const current = Math.round(startCount + (targetCount - startCount) * ease);
-
-        updateUI(current);
-
-        if (progress < 1) {
-          requestAnimationFrame(step);
-        } else {
-          updateUI(targetCount);
-        }
-      };
-
-      requestAnimationFrame(step);
-    };
-
-    // Trigger animation when milestones card scrolls into viewport
+    // Trigger 3D rolling animation when milestones card scrolls into viewport
     if ('IntersectionObserver' in window) {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasAnimated) {
             hasAnimated = true;
-            animateCountUp(currentSubscribers);
+            updateUI(currentSubscribers, true);
             observer.disconnect();
           }
         });
       }, { threshold: 0.15 });
       observer.observe(container);
     } else {
-      animateCountUp(currentSubscribers);
+      updateUI(currentSubscribers, true);
     }
 
-    // Attempt to query real-time subscriber count with safe fallback
+    // Attempt to query real-time subscriber count from secure backend with safe fallback
     const fetchLiveCount = async () => {
       try {
         const endpoints = [
+          '/api/subscribers', // Production / Vercel Serverless Function & Express
+          'http://localhost:5000/api/subscribers', // Local Node.js Express backend
           `https://api.subscribercounter.nl/api/youtube-subscriber-count/${channelId}/data`,
           `https://mixerno.space/api/youtube-channel-counter/user/${channelId}`
         ];
@@ -680,10 +669,15 @@ class App {
 
             if (res.ok) {
               const data = await res.json();
-              const fetchedCount = Number(data?.counts?.[0]?.value || data?.counts?.[2]?.value || data?.subscriberCount || data?.estSubCount);
+              const fetchedCount = Number(
+                data?.subscriberCount || 
+                data?.counts?.[0]?.value || 
+                data?.counts?.[2]?.value || 
+                data?.estSubCount
+              );
               if (fetchedCount && fetchedCount >= 5000 && fetchedCount <= 50000000) {
                 currentSubscribers = fetchedCount;
-                updateUI(currentSubscribers);
+                updateUI(currentSubscribers, true);
                 return;
               }
             }
@@ -696,9 +690,9 @@ class App {
       }
     };
 
-    // Fetch on load and gentle refresh every 60s
+    // Fetch on load and gentle refresh every 30s for live studio sync
     fetchLiveCount();
-    setInterval(fetchLiveCount, 60000);
+    setInterval(fetchLiveCount, 30000);
   }
 
   /* ---------------------------------------------------------
