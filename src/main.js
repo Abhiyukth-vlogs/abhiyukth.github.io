@@ -586,7 +586,7 @@ class App {
   /* ---------------------------------------------------------
      Live Subscriber Countdown & Community Milestones
      Channel ID: UCuG7-r1F3b2RzGoRFIe0MnQ (@abhiyukthvlogs)
-     Target: 10,000 (10K) | Current Baseline: 5,709 (5.7K)
+     Target: 10,000 (10K) | Current Baseline: 5,710 (5.7K)
      Next: 10K | Dream: 100K & 1M
      --------------------------------------------------------- */
   initLiveMilestonesCountdown() {
@@ -608,7 +608,7 @@ class App {
 
     const channelId = channelConfig.channel?.id || 'UCuG7-r1F3b2RzGoRFIe0MnQ';
     const targetSubscribers = 10000;
-    let currentSubscribers = channelConfig.channel?.milestones?.current || 5709;
+    let currentSubscribers = channelConfig.channel?.milestones?.current || 5710;
     let hasAnimated = false;
 
     // Set initial static values before scroll animation
@@ -650,34 +650,75 @@ class App {
       updateUI(currentSubscribers, true);
     }
 
-    // Attempt to query real-time subscriber count from secure backend with safe fallback
+    // Auto-update: Query real-time subscriber count with multiple redundant live endpoints
     const fetchLiveCount = async () => {
       try {
         const endpoints = [
-          '/api/subscribers', // Production / Vercel Serverless Function & Express
-          'http://localhost:5000/api/subscribers', // Local Node.js Express backend
-          `https://api.subscribercounter.nl/api/youtube-subscriber-count/${channelId}/data`,
-          `https://mixerno.space/api/youtube-channel-counter/user/${channelId}`
+          // 1. Same-origin backend (works on Vercel or local Express)
+          '/api/subscribers',
+          // 2. Deployed Vercel proxy (works from GitHub Pages abhiyukth.github.io)
+          'https://abhiyukthgithubio.vercel.app/api/subscribers',
+          // 3. High-availability live YouTube counter with CORS *
+          `https://mixerno.space/api/youtube-channel-counter/user/${channelId}`,
+          // 4. Local dev port
+          'http://localhost:5000/api/subscribers'
         ];
 
         for (const url of endpoints) {
           try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 4000);
+            const timeoutId = setTimeout(() => controller.abort(), 4500);
             const res = await fetch(url, { signal: controller.signal });
             clearTimeout(timeoutId);
 
             if (res.ok) {
               const data = await res.json();
-              const fetchedCount = Number(
-                data?.subscriberCount || 
-                data?.counts?.[0]?.value || 
-                data?.counts?.[2]?.value || 
-                data?.estSubCount
-              );
-              if (fetchedCount && fetchedCount >= 5000 && fetchedCount <= 50000000) {
-                currentSubscribers = Math.max(fetchedCount, 5709);
-                updateUI(currentSubscribers, true);
+              let fetchedCount = null;
+              let fetchedViews = null;
+              let fetchedVideos = null;
+
+              // Check if custom backend returned valid live count
+              if (data?.success && typeof data?.subscriberCount === 'number') {
+                fetchedCount = data.subscriberCount;
+                fetchedViews = data.viewCount;
+                fetchedVideos = data.videoCount;
+              } else if (Array.isArray(data?.counts)) {
+                // mixerno.space live response
+                const subItem = data.counts.find(c => c.value === 'subscribers' || c.value === 'apisubscribers');
+                if (subItem && subItem.count) {
+                  fetchedCount = Number(subItem.count);
+                }
+                const viewItem = data.counts.find(c => c.value === 'views');
+                if (viewItem && viewItem.count) {
+                  fetchedViews = Number(viewItem.count);
+                }
+                const vidItem = data.counts.find(c => c.value === 'videos');
+                if (vidItem && vidItem.count) {
+                  fetchedVideos = Number(vidItem.count);
+                }
+              } else if (data?.estSubCount) {
+                fetchedCount = Number(data.estSubCount);
+              }
+
+              if (fetchedCount && !isNaN(fetchedCount) && fetchedCount >= 1000 && fetchedCount <= 50000000) {
+                const finalCount = Math.max(fetchedCount, 5710);
+                if (finalCount !== currentSubscribers) {
+                  currentSubscribers = finalCount;
+                  updateUI(currentSubscribers, true);
+                }
+
+                // Update metric counters if live view/video data is present
+                if (fetchedVideos) {
+                  const statVideos = document.getElementById('stat-videos');
+                  if (statVideos) statVideos.textContent = `${fetchedVideos}+`;
+                }
+                if (fetchedViews) {
+                  const statViews = document.getElementById('stat-views');
+                  if (statViews) {
+                    const viewsInM = (fetchedViews / 1000000).toFixed(1);
+                    statViews.textContent = `${viewsInM}M+`;
+                  }
+                }
                 return;
               }
             }
@@ -690,9 +731,9 @@ class App {
       }
     };
 
-    // Fetch on load and gentle refresh every 30s for live studio sync
+    // Auto-update: Initial check and poll every 15 seconds for live studio sync
     fetchLiveCount();
-    setInterval(fetchLiveCount, 30000);
+    setInterval(fetchLiveCount, 15000);
   }
 
   /* ---------------------------------------------------------

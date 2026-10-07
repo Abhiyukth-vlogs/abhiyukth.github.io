@@ -24,10 +24,10 @@ export const channelConfig = {
     // Verified Channel Stats (as of inspection)
     stats: {
       subscribers: '5.7K',
-      subscribersCount: 5709,
-      subscribersFull: '5,709+',
-      videosCount: '608+',
-      totalViews: '2.3M+',
+      subscribersCount: 5710,
+      subscribersFull: '5,710+',
+      videosCount: '614+',
+      totalViews: '2.35M+',
       yearsActive: '4+'
     },
 
@@ -35,7 +35,7 @@ export const channelConfig = {
     milestones: {
       target: 10000,
       targetFormatted: '10K',
-      current: 5709,
+      current: 5710,
       currentFormatted: '5.7K',
       next: '10K',
       dream: '100K & 1M',
