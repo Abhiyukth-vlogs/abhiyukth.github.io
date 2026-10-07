@@ -115,7 +115,7 @@ The repository is configured to deploy directly to `https://abhiyukth.github.io/
 Open [`src/data/channel.js`](file:///e:/abhiyukth.github.io/src/data/channel.js):
 - **Channel Identity**: Edit `channel.name`, `channel.handle`, `channel.bio`, and `channel.stats`.
 - **Milestones**: Update `channel.milestones` subscriber goals.
-- **Social Links**: Update `links.youtube`, `links.instagram`, and donation links.
+- **Social Links**: Update `links.youtube`, `links.instagram`, `links.kick`, `links.twitch`, `links.x`, and donation links.
 
 ### How to Replace the Avatar & Banner
 1. Place your new profile picture in `public/assets/avatar.jpg` (or provide a direct URL).
@@ -196,7 +196,7 @@ Open [`src/styles.css`](file:///e:/abhiyukth.github.io/src/styles.css) and custo
 | **Featured Video** | Kozhikode Walkaaro Walkathon 2026 (`gxpAlDUWIOQ`) | Verified |
 | **Live Stream Replay**| *IRL Ghost Of Tsushima Director's Cut: Live Ps5* (`Kw2kIt6dyU4`) | Verified |
 | **Featured Playlists**| *Ghost Of Tsushima*, *PS5 Live*, *Kozhikode to Kashmir*, *GTA V*, *BGMI Live*, *Komban Holidays* | Verified |
-| **Social Links** | YouTube Channel, Streams tab, Playlists tab, Instagram (`@_abhiyukth_vlogs`) | Verified |
+| **Social Links** | YouTube Channel, Streams tab, Playlists tab, Instagram (`@abhiyukth.vlogs`), Kick, Twitch, X | Verified |
 | **Active Live Broadcast** | Currently Offline / Showing Latest Verified Stream Replay | Verified |
 
 ---

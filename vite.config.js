@@ -1,8 +1,8 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  // Base path configured for GitHub Pages repository subpath
-  base: '/abhiyukth.github.io/',
+  // Relative base path ensures all assets load correctly across Vercel, GitHub Pages, and custom domains
+  base: './',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

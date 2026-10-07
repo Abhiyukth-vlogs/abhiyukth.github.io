@@ -53,7 +53,10 @@ export const channelConfig = {
     subscribe: 'https://www.youtube.com/@abhiyukthvlogs?sub_confirmation=1',
     streams: 'https://www.youtube.com/@abhiyukthvlogs/streams',
     playlists: 'https://www.youtube.com/@abhiyukthvlogs/playlists',
-    instagram: 'https://www.instagram.com/_abhiyukth_vlogs?igsh=ZTg0dHR3YTF0ZGtn',
+    instagram: 'https://www.instagram.com/abhiyukth.vlogs/',
+    kick: 'https://kick.com/abhiyukthvlogs',
+    twitch: 'https://www.twitch.tv/abhiyukth_vlogs',
+    x: 'https://x.com/AbhiyukthVlogs',
     donationSupport: 'https://widget-8a7ef48a811d43f288c232b0055fa24e.elfsig.ht'
   },
 
