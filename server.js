@@ -25,9 +25,26 @@ let cache = {
 };
 const CACHE_TTL_MS = 60 * 1000; // 60 seconds
 
-// Middlewares
+// Allowed origins configuration for CORS security
+const allowedOrigins = process.env.ALLOWED_ORIGIN
+  ? process.env.ALLOWED_ORIGIN.split(',').map(o => o.trim())
+  : [
+      'https://abhiyukth.github.io',
+      'https://abhiyukthgithubio.vercel.app',
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://localhost:5000'
+    ];
+
+// Security: Restrict CORS origin to trusted domains instead of wildcard '*'
 app.use(cors({
-  origin: '*', // Allow requests from local dev and deployed frontend
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS policy: Access denied for this origin'));
+    }
+  },
   methods: ['GET']
 }));
 app.use(express.json());
