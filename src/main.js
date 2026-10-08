@@ -213,13 +213,23 @@ class App {
       });
     });
 
-    // Real-time Search Input
+    // Real-time Search Input & Keyboard Shortcut (Escape to Clear)
     searchInput?.addEventListener('input', (e) => {
       this.searchQuery = e.target.value.trim().toLowerCase();
       if (clearBtn) {
         clearBtn.style.display = this.searchQuery ? 'block' : 'none';
       }
       this.renderVideoCatalog();
+    });
+
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && searchInput.value) {
+        e.preventDefault();
+        searchInput.value = '';
+        this.searchQuery = '';
+        if (clearBtn) clearBtn.style.display = 'none';
+        this.renderVideoCatalog();
+      }
     });
 
     // Clear Search Button
