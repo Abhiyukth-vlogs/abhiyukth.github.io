@@ -2,9 +2,23 @@ import axios from 'axios';
 
 // Vercel Serverless Function Handler
 export default async function handler(req, res) {
-  // Enable CORS
+  // Enable CORS securely by restricting allowed origins
+  const origin = req.headers.origin;
+  const allowedOrigins = process.env.ALLOWED_ORIGIN
+    ? process.env.ALLOWED_ORIGIN.split(',').map(o => o.trim())
+    : [
+        'https://abhiyukth.github.io',
+        'https://abhiyukthgithubio.vercel.app',
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://localhost:5000'
+      ];
+
+  if (!origin || allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin || allowedOrigins[0]);
+  }
+
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
   res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
