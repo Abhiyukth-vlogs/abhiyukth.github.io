@@ -513,29 +513,64 @@ class App {
       }
     }, { passive: true });
 
+    const closeMobileDrawer = () => {
+      if (!navDrawer?.classList.contains('is-open')) return;
+      navDrawer.classList.remove('is-open');
+      navDrawer.setAttribute('aria-hidden', 'true');
+      menuToggle?.classList.remove('is-active');
+      menuToggle?.setAttribute('aria-expanded', 'false');
+      menuToggle?.focus();
+    };
+
+    const openMobileDrawer = () => {
+      navDrawer?.classList.add('is-open');
+      navDrawer?.setAttribute('aria-hidden', 'false');
+      menuToggle?.classList.add('is-active');
+      menuToggle?.setAttribute('aria-expanded', 'true');
+      const firstFocusable = navDrawer?.querySelector('a, button');
+      firstFocusable?.focus();
+    };
+
     // Mobile Hamburger Menu Toggle
     menuToggle?.addEventListener('click', () => {
       const isOpen = navDrawer?.classList.contains('is-open');
       if (isOpen) {
-        navDrawer?.classList.remove('is-open');
-        navDrawer?.setAttribute('aria-hidden', 'true');
-        menuToggle.classList.remove('is-active');
-        menuToggle.setAttribute('aria-expanded', 'false');
+        closeMobileDrawer();
       } else {
-        navDrawer?.classList.add('is-open');
-        navDrawer?.setAttribute('aria-hidden', 'false');
-        menuToggle.classList.add('is-active');
-        menuToggle.setAttribute('aria-expanded', 'true');
+        openMobileDrawer();
+      }
+    });
+
+    // Keyboard handlers for mobile drawer: Escape to close and Tab focus trapping
+    document.addEventListener('keydown', (e) => {
+      if (!navDrawer?.classList.contains('is-open')) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMobileDrawer();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const focusables = navDrawer.querySelectorAll('a, button, [tabindex]:not([tabindex="-1"])');
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     });
 
     // Close mobile drawer when clicking a link
     mobileLinks.forEach(link => {
       link.addEventListener('click', () => {
-        navDrawer?.classList.remove('is-open');
-        navDrawer?.setAttribute('aria-hidden', 'true');
-        menuToggle?.classList.remove('is-active');
-        menuToggle?.setAttribute('aria-expanded', 'false');
+        closeMobileDrawer();
       });
     });
 
