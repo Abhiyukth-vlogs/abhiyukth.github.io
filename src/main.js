@@ -198,18 +198,41 @@ class App {
     const clearBtn = document.getElementById('search-clear-btn');
     const resetBtn = document.getElementById('reset-filters-btn');
 
-    // Category Tabs
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => {
-          t.classList.remove('active');
-          t.setAttribute('aria-selected', 'false');
-        });
-        tab.classList.add('active');
-        tab.setAttribute('aria-selected', 'true');
+    const selectTab = (tab) => {
+      tabs.forEach(t => {
+        const isSelected = t === tab;
+        t.classList.toggle('active', isSelected);
+        t.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+        t.setAttribute('tabindex', isSelected ? '0' : '-1');
+      });
+      tab.focus();
+      this.activeCategory = tab.dataset.category || 'All';
+      this.renderVideoCatalog();
+    };
 
-        this.activeCategory = tab.dataset.category || 'All';
-        this.renderVideoCatalog();
+    // Category Tabs Click & Keyboard Navigation
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => selectTab(tab));
+
+      tab.addEventListener('keydown', (e) => {
+        let targetIndex = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          targetIndex = (index + 1) % tabs.length;
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          targetIndex = (index - 1 + tabs.length) % tabs.length;
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          targetIndex = 0;
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          targetIndex = tabs.length - 1;
+        }
+
+        if (targetIndex !== null) {
+          selectTab(tabs[targetIndex]);
+        }
       });
     });
 
@@ -220,6 +243,17 @@ class App {
         clearBtn.style.display = this.searchQuery ? 'block' : 'none';
       }
       this.renderVideoCatalog();
+    });
+
+    // Search Input Escape Key Listener
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.searchQuery) {
+        e.preventDefault();
+        if (searchInput) searchInput.value = '';
+        this.searchQuery = '';
+        if (clearBtn) clearBtn.style.display = 'none';
+        this.renderVideoCatalog();
+      }
     });
 
     // Clear Search Button
@@ -242,6 +276,7 @@ class App {
         const isAll = (t.dataset.category || 'All') === 'All';
         t.classList.toggle('active', isAll);
         t.setAttribute('aria-selected', isAll ? 'true' : 'false');
+        t.setAttribute('tabindex', isAll ? '0' : '-1');
       });
 
       this.renderVideoCatalog();
