@@ -18,6 +18,9 @@ export class HeroScene {
     this.isVisible = true;
     this.clock = new THREE.Clock();
     
+    // Reusable temp vector to avoid GC allocations during 60FPS animation lerping
+    this.targetScaleVec = new THREE.Vector3();
+
     // Pointer & Parallax
     this.pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
     this.drag = {
@@ -645,7 +648,8 @@ export class HeroScene {
 
     if (this.controllerGroup && target.controller) {
       this.controllerGroup.position.lerp(target.controller.pos, lerpSpeed);
-      this.controllerGroup.scale.lerp(new THREE.Vector3(target.controller.scale, target.controller.scale, target.controller.scale), lerpSpeed);
+      // Reuse targetScaleVec to prevent ~60 Vector3 allocations/sec in animation loop
+      this.controllerGroup.scale.lerp(this.targetScaleVec.setScalar(target.controller.scale), lerpSpeed);
       
       // Floating bobbing motion
       if (!this.prefersReducedMotion && !this.isPaused) {
@@ -657,7 +661,7 @@ export class HeroScene {
 
     if (this.cameraGroup && target.camera) {
       this.cameraGroup.position.lerp(target.camera.pos, lerpSpeed);
-      this.cameraGroup.scale.lerp(new THREE.Vector3(target.camera.scale, target.camera.scale, target.camera.scale), lerpSpeed);
+      this.cameraGroup.scale.lerp(this.targetScaleVec.setScalar(target.camera.scale), lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         const floatOffset = Math.cos(elapsedTime * 1.3) * 0.08;
@@ -668,7 +672,7 @@ export class HeroScene {
 
     if (this.playIconGroup && target.playIcon) {
       this.playIconGroup.position.lerp(target.playIcon.pos, lerpSpeed);
-      this.playIconGroup.scale.lerp(new THREE.Vector3(target.playIcon.scale, target.playIcon.scale, target.playIcon.scale), lerpSpeed);
+      this.playIconGroup.scale.lerp(this.targetScaleVec.setScalar(target.playIcon.scale), lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         this.playIconGroup.rotation.y += 0.015;

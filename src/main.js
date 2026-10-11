@@ -213,13 +213,17 @@ class App {
       });
     });
 
-    // Real-time Search Input
+    // Real-time Search Input (Debounced to prevent DOM thrashing on fast keystrokes)
+    let searchDebounceTimeout = null;
     searchInput?.addEventListener('input', (e) => {
       this.searchQuery = e.target.value.trim().toLowerCase();
       if (clearBtn) {
         clearBtn.style.display = this.searchQuery ? 'block' : 'none';
       }
-      this.renderVideoCatalog();
+      if (searchDebounceTimeout) clearTimeout(searchDebounceTimeout);
+      searchDebounceTimeout = setTimeout(() => {
+        this.renderVideoCatalog();
+      }, 150);
     });
 
     // Clear Search Button
