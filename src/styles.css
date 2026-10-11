@@ -284,7 +284,16 @@ h1, h2, h3, h4, h5, h6 {
   white-space: nowrap;
 }
 
-.btn:focus-visible {
+.btn:focus-visible,
+.featured-thumb-wrap:focus-visible,
+.video-card-thumb-wrap:focus-visible,
+.playlist-card:focus-visible,
+.tab-btn:focus-visible,
+.mode-btn:focus-visible,
+.motion-toggle-btn:focus-visible,
+.social-pill-btn:focus-visible,
+.back-to-top-btn:focus-visible,
+.search-clear-btn:focus-visible {
   outline: 3px solid var(--accent-cyan);
   outline-offset: 2px;
 }
@@ -915,7 +924,8 @@ h1, h2, h3, h4, h5, h6 {
   transition: background var(--transition-fast);
 }
 
-.featured-thumb-wrap:hover .thumb-play-overlay {
+.featured-thumb-wrap:hover .thumb-play-overlay,
+.featured-thumb-wrap:focus-visible .thumb-play-overlay {
   background: rgba(0, 0, 0, 0.15);
 }
 
@@ -932,7 +942,8 @@ h1, h2, h3, h4, h5, h6 {
   transition: transform var(--transition-fast);
 }
 
-.featured-thumb-wrap:hover .play-circle {
+.featured-thumb-wrap:hover .play-circle,
+.featured-thumb-wrap:focus-visible .play-circle {
   transform: scale(1.12);
 }
 
@@ -1683,7 +1694,8 @@ h1, h2, h3, h4, h5, h6 {
   transition: all var(--transition-fast);
 }
 
-.social-pill-btn:hover {
+.social-pill-btn:hover,
+.social-pill-btn:focus-visible {
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-main);
   border-color: rgba(255, 255, 255, 0.25);
@@ -2462,7 +2474,8 @@ h1, h2, h3, h4, h5, h6 {
   transition: all var(--transition-fast);
 }
 
-.back-to-top-btn:hover {
+.back-to-top-btn:hover,
+.back-to-top-btn:focus-visible {
   background: var(--surface-hover);
   color: var(--text-main);
   border-color: rgba(255, 255, 255, 0.2);
