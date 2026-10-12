@@ -513,30 +513,40 @@ class App {
       }
     }, { passive: true });
 
+    const closeDrawer = () => {
+      if (!navDrawer?.classList.contains('is-open')) return;
+      navDrawer.classList.remove('is-open');
+      navDrawer.setAttribute('aria-hidden', 'true');
+      menuToggle?.classList.remove('is-active');
+      menuToggle?.setAttribute('aria-expanded', 'false');
+      menuToggle?.focus();
+    };
+
     // Mobile Hamburger Menu Toggle
     menuToggle?.addEventListener('click', () => {
       const isOpen = navDrawer?.classList.contains('is-open');
       if (isOpen) {
-        navDrawer?.classList.remove('is-open');
-        navDrawer?.setAttribute('aria-hidden', 'true');
-        menuToggle.classList.remove('is-active');
-        menuToggle.setAttribute('aria-expanded', 'false');
+        closeDrawer();
       } else {
         navDrawer?.classList.add('is-open');
         navDrawer?.setAttribute('aria-hidden', 'false');
         menuToggle.classList.add('is-active');
         menuToggle.setAttribute('aria-expanded', 'true');
+        const firstLink = navDrawer?.querySelector('a, button');
+        firstLink?.focus();
       }
     });
 
     // Close mobile drawer when clicking a link
     mobileLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        navDrawer?.classList.remove('is-open');
-        navDrawer?.setAttribute('aria-hidden', 'true');
-        menuToggle?.classList.remove('is-active');
-        menuToggle?.setAttribute('aria-expanded', 'false');
-      });
+      link.addEventListener('click', closeDrawer);
+    });
+
+    // Close mobile drawer on Escape key press
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navDrawer?.classList.contains('is-open')) {
+        closeDrawer();
+      }
     });
 
     // Active Section Observer for Desktop Navigation
