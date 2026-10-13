@@ -17,6 +17,9 @@ export class HeroScene {
     this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.isVisible = true;
     this.clock = new THREE.Clock();
+
+    // Reusable scratch vector for scale lerping to avoid per-frame allocations in requestAnimationFrame
+    this._tempScaleVector = new THREE.Vector3();
     
     // Pointer & Parallax
     this.pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
@@ -645,7 +648,9 @@ export class HeroScene {
 
     if (this.controllerGroup && target.controller) {
       this.controllerGroup.position.lerp(target.controller.pos, lerpSpeed);
-      this.controllerGroup.scale.lerp(new THREE.Vector3(target.controller.scale, target.controller.scale, target.controller.scale), lerpSpeed);
+      // Performance optimization: reuse scratch vector instead of `new THREE.Vector3()` on every frame
+      this._tempScaleVector.setScalar(target.controller.scale);
+      this.controllerGroup.scale.lerp(this._tempScaleVector, lerpSpeed);
       
       // Floating bobbing motion
       if (!this.prefersReducedMotion && !this.isPaused) {
@@ -657,7 +662,9 @@ export class HeroScene {
 
     if (this.cameraGroup && target.camera) {
       this.cameraGroup.position.lerp(target.camera.pos, lerpSpeed);
-      this.cameraGroup.scale.lerp(new THREE.Vector3(target.camera.scale, target.camera.scale, target.camera.scale), lerpSpeed);
+      // Performance optimization: reuse scratch vector instead of `new THREE.Vector3()` on every frame
+      this._tempScaleVector.setScalar(target.camera.scale);
+      this.cameraGroup.scale.lerp(this._tempScaleVector, lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         const floatOffset = Math.cos(elapsedTime * 1.3) * 0.08;
@@ -668,7 +675,9 @@ export class HeroScene {
 
     if (this.playIconGroup && target.playIcon) {
       this.playIconGroup.position.lerp(target.playIcon.pos, lerpSpeed);
-      this.playIconGroup.scale.lerp(new THREE.Vector3(target.playIcon.scale, target.playIcon.scale, target.playIcon.scale), lerpSpeed);
+      // Performance optimization: reuse scratch vector instead of `new THREE.Vector3()` on every frame
+      this._tempScaleVector.setScalar(target.playIcon.scale);
+      this.playIconGroup.scale.lerp(this._tempScaleVector, lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         this.playIconGroup.rotation.y += 0.015;
