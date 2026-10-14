@@ -289,6 +289,24 @@ h1, h2, h3, h4, h5, h6 {
   outline-offset: 2px;
 }
 
+/* Keyboard Navigation Focus Visible Rings for Interactive Controls */
+.mode-btn:focus-visible,
+.motion-toggle-btn:focus-visible,
+.tab-btn:focus-visible,
+.search-clear-btn:focus-visible,
+.back-to-top-btn:focus-visible,
+.social-pill-btn:focus-visible,
+.mobile-menu-toggle:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+.featured-thumb-wrap:focus-visible,
+.video-card-thumb-wrap:focus-visible {
+  outline: 3px solid var(--accent-cyan);
+  outline-offset: 3px;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-purple), #7C3AED);
   color: #fff;
