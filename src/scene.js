@@ -645,7 +645,9 @@ export class HeroScene {
 
     if (this.controllerGroup && target.controller) {
       this.controllerGroup.position.lerp(target.controller.pos, lerpSpeed);
-      this.controllerGroup.scale.lerp(new THREE.Vector3(target.controller.scale, target.controller.scale, target.controller.scale), lerpSpeed);
+      // Optimize: Use scalar MathUtils.lerp instead of instantiating new THREE.Vector3 every frame to prevent GC pressure
+      const nextScale = THREE.MathUtils.lerp(this.controllerGroup.scale.x, target.controller.scale, lerpSpeed);
+      this.controllerGroup.scale.setScalar(nextScale);
       
       // Floating bobbing motion
       if (!this.prefersReducedMotion && !this.isPaused) {
@@ -657,7 +659,9 @@ export class HeroScene {
 
     if (this.cameraGroup && target.camera) {
       this.cameraGroup.position.lerp(target.camera.pos, lerpSpeed);
-      this.cameraGroup.scale.lerp(new THREE.Vector3(target.camera.scale, target.camera.scale, target.camera.scale), lerpSpeed);
+      // Optimize: Use scalar MathUtils.lerp instead of instantiating new THREE.Vector3 every frame
+      const nextScale = THREE.MathUtils.lerp(this.cameraGroup.scale.x, target.camera.scale, lerpSpeed);
+      this.cameraGroup.scale.setScalar(nextScale);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         const floatOffset = Math.cos(elapsedTime * 1.3) * 0.08;
@@ -668,7 +672,9 @@ export class HeroScene {
 
     if (this.playIconGroup && target.playIcon) {
       this.playIconGroup.position.lerp(target.playIcon.pos, lerpSpeed);
-      this.playIconGroup.scale.lerp(new THREE.Vector3(target.playIcon.scale, target.playIcon.scale, target.playIcon.scale), lerpSpeed);
+      // Optimize: Use scalar MathUtils.lerp instead of instantiating new THREE.Vector3 every frame
+      const nextScale = THREE.MathUtils.lerp(this.playIconGroup.scale.x, target.playIcon.scale, lerpSpeed);
+      this.playIconGroup.scale.setScalar(nextScale);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         this.playIconGroup.rotation.y += 0.015;
