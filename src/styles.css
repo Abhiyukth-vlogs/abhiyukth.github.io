@@ -266,6 +266,12 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Focus Visible Global Styles for Interactive Elements */
+:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -627,6 +633,18 @@ h1, h2, h3, h4, h5, h6 {
 .mode-btn:hover {
   color: var(--text-main);
   background: rgba(255, 255, 255, 0.06);
+}
+
+.tab-btn:focus-visible,
+.mode-btn:focus-visible,
+.motion-toggle-btn:focus-visible,
+.social-pill-btn:focus-visible,
+.back-to-top-btn:focus-visible,
+.mobile-menu-toggle:focus-visible,
+.video-card-thumb-wrap:focus-visible,
+.playlist-card:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 3px;
 }
 
 .mode-btn.active {
