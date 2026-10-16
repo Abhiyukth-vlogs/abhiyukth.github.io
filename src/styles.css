@@ -284,8 +284,15 @@ h1, h2, h3, h4, h5, h6 {
   white-space: nowrap;
 }
 
-.btn:focus-visible {
-  outline: 3px solid var(--accent-cyan);
+.btn:focus-visible,
+.tab-btn:focus-visible,
+.mode-btn:focus-visible,
+.motion-toggle-btn:focus-visible,
+.btn-card-watch:focus-visible,
+.search-clear-btn:focus-visible,
+.back-to-top-btn:focus-visible,
+.video-card-thumb-wrap:focus-visible {
+  outline: 2px solid var(--accent-cyan);
   outline-offset: 2px;
 }
 
