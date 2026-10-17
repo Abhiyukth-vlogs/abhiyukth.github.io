@@ -222,6 +222,17 @@ class App {
       this.renderVideoCatalog();
     });
 
+    // Clear search on Escape key
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.searchQuery) {
+        e.preventDefault();
+        if (searchInput) searchInput.value = '';
+        this.searchQuery = '';
+        if (clearBtn) clearBtn.style.display = 'none';
+        this.renderVideoCatalog();
+      }
+    });
+
     // Clear Search Button
     clearBtn?.addEventListener('click', () => {
       if (searchInput) searchInput.value = '';
