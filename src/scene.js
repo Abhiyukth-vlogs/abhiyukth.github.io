@@ -30,18 +30,20 @@ export class HeroScene {
       targetRotY: 0
     };
 
-    // Animation targets for mode transitions
+    // Animation targets for mode transitions.
+    // OPTIMIZATION: Vector3 objects for positions, rotations, and scales are pre-allocated here
+    // to avoid allocating new objects every frame inside the 60-120 FPS render loop.
     this.modeTargets = {
       gaming: {
-        controller: { pos: new THREE.Vector3(0, 0, 0), rot: new THREE.Vector3(0.1, -0.2, 0.05), scale: 1.15 },
-        camera: { pos: new THREE.Vector3(2.4, -1.3, -1.8), rot: new THREE.Vector3(-0.2, -0.6, 0.1), scale: 0.65 },
-        playIcon: { pos: new THREE.Vector3(-1.8, 1.5, -0.8), rot: new THREE.Vector3(0, 0.4, 0), scale: 0.8 },
+        controller: { pos: new THREE.Vector3(0, 0, 0), rot: new THREE.Vector3(0.1, -0.2, 0.05), scaleVec: new THREE.Vector3(1.15, 1.15, 1.15) },
+        camera: { pos: new THREE.Vector3(2.4, -1.3, -1.8), rot: new THREE.Vector3(-0.2, -0.6, 0.1), scaleVec: new THREE.Vector3(0.65, 0.65, 0.65) },
+        playIcon: { pos: new THREE.Vector3(-1.8, 1.5, -0.8), rot: new THREE.Vector3(0, 0.4, 0), scaleVec: new THREE.Vector3(0.8, 0.8, 0.8) },
         lightColor: new THREE.Color(0x8B5CF6)
       },
       vlogs: {
-        controller: { pos: new THREE.Vector3(-2.4, -1.3, -1.8), rot: new THREE.Vector3(0.2, 0.6, -0.1), scale: 0.65 },
-        camera: { pos: new THREE.Vector3(0, 0, 0), rot: new THREE.Vector3(0.05, 0.25, 0), scale: 1.2 },
-        playIcon: { pos: new THREE.Vector3(1.8, 1.5, -0.8), rot: new THREE.Vector3(0, -0.4, 0), scale: 0.8 },
+        controller: { pos: new THREE.Vector3(-2.4, -1.3, -1.8), rot: new THREE.Vector3(0.2, 0.6, -0.1), scaleVec: new THREE.Vector3(0.65, 0.65, 0.65) },
+        camera: { pos: new THREE.Vector3(0, 0, 0), rot: new THREE.Vector3(0.05, 0.25, 0), scaleVec: new THREE.Vector3(1.2, 1.2, 1.2) },
+        playIcon: { pos: new THREE.Vector3(1.8, 1.5, -0.8), rot: new THREE.Vector3(0, -0.4, 0), scaleVec: new THREE.Vector3(0.8, 0.8, 0.8) },
         lightColor: new THREE.Color(0x22D3EE)
       }
     };
@@ -157,15 +159,15 @@ export class HeroScene {
     const initMode = this.modeTargets.gaming;
     this.controllerGroup.position.copy(initMode.controller.pos);
     this.controllerGroup.rotation.setFromVector3(initMode.controller.rot);
-    this.controllerGroup.scale.setScalar(initMode.controller.scale);
+    this.controllerGroup.scale.copy(initMode.controller.scaleVec);
 
     this.cameraGroup.position.copy(initMode.camera.pos);
     this.cameraGroup.rotation.setFromVector3(initMode.camera.rot);
-    this.cameraGroup.scale.setScalar(initMode.camera.scale);
+    this.cameraGroup.scale.copy(initMode.camera.scaleVec);
 
     this.playIconGroup.position.copy(initMode.playIcon.pos);
     this.playIconGroup.rotation.setFromVector3(initMode.playIcon.rot);
-    this.playIconGroup.scale.setScalar(initMode.playIcon.scale);
+    this.playIconGroup.scale.copy(initMode.playIcon.scaleVec);
   }
 
   createController() {
@@ -643,9 +645,11 @@ export class HeroScene {
     const target = this.modeTargets[this.currentMode];
     const lerpSpeed = 0.06;
 
+    // ⚡ OPTIMIZATION: Reuse pre-allocated scaleVec references instead of instantiating
+    // 3 new THREE.Vector3 objects per frame (saving ~180-360 allocations/sec).
     if (this.controllerGroup && target.controller) {
       this.controllerGroup.position.lerp(target.controller.pos, lerpSpeed);
-      this.controllerGroup.scale.lerp(new THREE.Vector3(target.controller.scale, target.controller.scale, target.controller.scale), lerpSpeed);
+      this.controllerGroup.scale.lerp(target.controller.scaleVec, lerpSpeed);
       
       // Floating bobbing motion
       if (!this.prefersReducedMotion && !this.isPaused) {
@@ -657,7 +661,7 @@ export class HeroScene {
 
     if (this.cameraGroup && target.camera) {
       this.cameraGroup.position.lerp(target.camera.pos, lerpSpeed);
-      this.cameraGroup.scale.lerp(new THREE.Vector3(target.camera.scale, target.camera.scale, target.camera.scale), lerpSpeed);
+      this.cameraGroup.scale.lerp(target.camera.scaleVec, lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         const floatOffset = Math.cos(elapsedTime * 1.3) * 0.08;
@@ -668,7 +672,7 @@ export class HeroScene {
 
     if (this.playIconGroup && target.playIcon) {
       this.playIconGroup.position.lerp(target.playIcon.pos, lerpSpeed);
-      this.playIconGroup.scale.lerp(new THREE.Vector3(target.playIcon.scale, target.playIcon.scale, target.playIcon.scale), lerpSpeed);
+      this.playIconGroup.scale.lerp(target.playIcon.scaleVec, lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         this.playIconGroup.rotation.y += 0.015;
