@@ -222,6 +222,17 @@ class App {
       this.renderVideoCatalog();
     });
 
+    // Clear Search on Escape key
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.searchQuery) {
+        e.preventDefault();
+        if (searchInput) searchInput.value = '';
+        this.searchQuery = '';
+        if (clearBtn) clearBtn.style.display = 'none';
+        this.renderVideoCatalog();
+      }
+    });
+
     // Clear Search Button
     clearBtn?.addEventListener('click', () => {
       if (searchInput) searchInput.value = '';
@@ -251,6 +262,7 @@ class App {
   renderVideoCatalog() {
     const grid = document.getElementById('videos-grid');
     const emptyState = document.getElementById('videos-empty-state');
+    const statusAnnouncer = document.getElementById('catalog-status-announcer');
     if (!grid) return;
 
     let filtered = channelConfig.videos;
@@ -267,6 +279,12 @@ class App {
         const categoryMatch = v.category.toLowerCase().includes(this.searchQuery);
         return titleMatch || categoryMatch;
       });
+    }
+
+    if (statusAnnouncer) {
+      const catText = this.activeCategory !== 'All' ? ` in ${this.activeCategory}` : '';
+      const queryText = this.searchQuery ? ` matching "${this.searchQuery}"` : '';
+      statusAnnouncer.textContent = `Showing ${filtered.length} ${filtered.length === 1 ? 'video' : 'videos'}${catText}${queryText}.`;
     }
 
     if (filtered.length === 0) {
