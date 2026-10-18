@@ -614,7 +614,6 @@ export class HeroScene {
       return;
     }
 
-    const delta = this.clock.getDelta();
     const elapsedTime = this.clock.getElapsedTime();
 
     // 1. Pointer Parallax smoothing (LERP)
@@ -643,9 +642,13 @@ export class HeroScene {
     const target = this.modeTargets[this.currentMode];
     const lerpSpeed = 0.06;
 
+    // Optimization: Perform scalar lerp directly on group scales using setScalar()
+    // rather than instantiating new THREE.Vector3 objects every frame in the render loop.
+    // This eliminates ~180-360 allocations/sec, preventing GC pressure and animation micro-stutter.
     if (this.controllerGroup && target.controller) {
       this.controllerGroup.position.lerp(target.controller.pos, lerpSpeed);
-      this.controllerGroup.scale.lerp(new THREE.Vector3(target.controller.scale, target.controller.scale, target.controller.scale), lerpSpeed);
+      const newScale = this.controllerGroup.scale.x + (target.controller.scale - this.controllerGroup.scale.x) * lerpSpeed;
+      this.controllerGroup.scale.setScalar(newScale);
       
       // Floating bobbing motion
       if (!this.prefersReducedMotion && !this.isPaused) {
@@ -657,7 +660,8 @@ export class HeroScene {
 
     if (this.cameraGroup && target.camera) {
       this.cameraGroup.position.lerp(target.camera.pos, lerpSpeed);
-      this.cameraGroup.scale.lerp(new THREE.Vector3(target.camera.scale, target.camera.scale, target.camera.scale), lerpSpeed);
+      const newScale = this.cameraGroup.scale.x + (target.camera.scale - this.cameraGroup.scale.x) * lerpSpeed;
+      this.cameraGroup.scale.setScalar(newScale);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         const floatOffset = Math.cos(elapsedTime * 1.3) * 0.08;
@@ -668,7 +672,8 @@ export class HeroScene {
 
     if (this.playIconGroup && target.playIcon) {
       this.playIconGroup.position.lerp(target.playIcon.pos, lerpSpeed);
-      this.playIconGroup.scale.lerp(new THREE.Vector3(target.playIcon.scale, target.playIcon.scale, target.playIcon.scale), lerpSpeed);
+      const newScale = this.playIconGroup.scale.x + (target.playIcon.scale - this.playIconGroup.scale.x) * lerpSpeed;
+      this.playIconGroup.scale.setScalar(newScale);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         this.playIconGroup.rotation.y += 0.015;
