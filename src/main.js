@@ -198,8 +198,8 @@ class App {
     const clearBtn = document.getElementById('search-clear-btn');
     const resetBtn = document.getElementById('reset-filters-btn');
 
-    // Category Tabs
-    tabs.forEach(tab => {
+    // Category Tabs click & keyboard arrow navigation
+    tabs.forEach((tab, index) => {
       tab.addEventListener('click', () => {
         tabs.forEach(t => {
           t.classList.remove('active');
@@ -211,6 +211,25 @@ class App {
         this.activeCategory = tab.dataset.category || 'All';
         this.renderVideoCatalog();
       });
+
+      tab.addEventListener('keydown', (e) => {
+        let targetIndex = null;
+        if (e.key === 'ArrowRight') {
+          targetIndex = (index + 1) % tabs.length;
+        } else if (e.key === 'ArrowLeft') {
+          targetIndex = (index - 1 + tabs.length) % tabs.length;
+        } else if (e.key === 'Home') {
+          targetIndex = 0;
+        } else if (e.key === 'End') {
+          targetIndex = tabs.length - 1;
+        }
+
+        if (targetIndex !== null) {
+          e.preventDefault();
+          tabs[targetIndex].focus();
+          tabs[targetIndex].click();
+        }
+      });
     });
 
     // Real-time Search Input
@@ -220,6 +239,17 @@ class App {
         clearBtn.style.display = this.searchQuery ? 'block' : 'none';
       }
       this.renderVideoCatalog();
+    });
+
+    // Escape key to clear search
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.searchQuery) {
+        e.preventDefault();
+        if (searchInput) searchInput.value = '';
+        this.searchQuery = '';
+        if (clearBtn) clearBtn.style.display = 'none';
+        this.renderVideoCatalog();
+      }
     });
 
     // Clear Search Button
@@ -267,6 +297,16 @@ class App {
         const categoryMatch = v.category.toLowerCase().includes(this.searchQuery);
         return titleMatch || categoryMatch;
       });
+    }
+
+    // Announce filtered result count to screen readers
+    const announcer = document.getElementById('catalog-results-announcer');
+    if (announcer) {
+      const categoryLabel = this.activeCategory !== 'All' ? ` in ${this.activeCategory}` : '';
+      const searchLabel = this.searchQuery ? ` matching "${this.searchQuery}"` : '';
+      announcer.textContent = filtered.length === 0
+        ? `No videos found${categoryLabel}${searchLabel}.`
+        : `Showing ${filtered.length} video${filtered.length === 1 ? '' : 's'}${categoryLabel}${searchLabel}.`;
     }
 
     if (filtered.length === 0) {
