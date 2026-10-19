@@ -5,6 +5,17 @@ import { Odometer } from './components/odometer.js';
 const FALLBACK_AVATAR = `${import.meta.env.BASE_URL}assets/avatar-fallback.svg`;
 
 /**
+ * Performance Utility: Debounce function execution to avoid DOM thrashing on rapid events
+ */
+function debounce(fn, delay = 150) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+/**
  * Main Application Orchestrator for Abhiyukth Vlogs
  */
 
@@ -213,13 +224,15 @@ class App {
       });
     });
 
-    // Real-time Search Input
+    // Real-time Search Input (Debounced by 150ms to prevent DOM thrashing while typing)
+    const debouncedRenderCatalog = debounce(() => this.renderVideoCatalog(), 150);
+
     searchInput?.addEventListener('input', (e) => {
       this.searchQuery = e.target.value.trim().toLowerCase();
       if (clearBtn) {
         clearBtn.style.display = this.searchQuery ? 'block' : 'none';
       }
-      this.renderVideoCatalog();
+      debouncedRenderCatalog();
     });
 
     // Clear Search Button
@@ -650,19 +663,27 @@ class App {
       updateUI(currentSubscribers, true);
     }
 
-    // Auto-update: Query real-time subscriber count with multiple redundant live endpoints
+    // Auto-update: Query real-time subscriber count with cached working endpoint to eliminate polling latency
+    let workingEndpoint = null;
+
     const fetchLiveCount = async () => {
       try {
-        const endpoints = [
+        const isLocalhost = typeof window !== 'undefined' &&
+          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+        // Reuse known working endpoint or check fallback options
+        const endpoints = workingEndpoint ? [workingEndpoint] : [
           // 1. Same-origin backend (works on Vercel or local Express)
           '/api/subscribers',
           // 2. Deployed Vercel proxy (works from GitHub Pages abhiyukth.github.io)
           'https://abhiyukthgithubio.vercel.app/api/subscribers',
           // 3. High-availability live YouTube counter with CORS *
-          `https://mixerno.space/api/youtube-channel-counter/user/${channelId}`,
-          // 4. Local dev port
-          'http://localhost:5000/api/subscribers'
+          `https://mixerno.space/api/youtube-channel-counter/user/${channelId}`
         ];
+
+        if (!workingEndpoint && isLocalhost) {
+          endpoints.push('http://localhost:5000/api/subscribers');
+        }
 
         for (const url of endpoints) {
           try {
@@ -701,6 +722,7 @@ class App {
               }
 
               if (fetchedCount && !isNaN(fetchedCount) && fetchedCount >= 1000 && fetchedCount <= 50000000) {
+                workingEndpoint = url; // Cache successful endpoint to avoid redundant network attempts
                 const finalCount = Math.max(fetchedCount, 5710);
                 if (finalCount !== currentSubscribers) {
                   currentSubscribers = finalCount;
@@ -725,6 +747,11 @@ class App {
           } catch (innerErr) {
             // Gracefully ignore and try next source
           }
+        }
+
+        // Reset workingEndpoint if cached source failed so subsequent poll falls back to all sources
+        if (workingEndpoint) {
+          workingEndpoint = null;
         }
       } catch (err) {
         // Safe baseline remains active
