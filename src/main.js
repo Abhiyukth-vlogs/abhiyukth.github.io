@@ -513,30 +513,48 @@ class App {
       }
     }, { passive: true });
 
+    const closeMobileMenu = () => {
+      navDrawer?.classList.remove('is-open');
+      navDrawer?.setAttribute('aria-hidden', 'true');
+      menuToggle?.classList.remove('is-active');
+      menuToggle?.setAttribute('aria-expanded', 'false');
+    };
+
     // Mobile Hamburger Menu Toggle
     menuToggle?.addEventListener('click', () => {
       const isOpen = navDrawer?.classList.contains('is-open');
       if (isOpen) {
-        navDrawer?.classList.remove('is-open');
-        navDrawer?.setAttribute('aria-hidden', 'true');
-        menuToggle.classList.remove('is-active');
-        menuToggle.setAttribute('aria-expanded', 'false');
+        closeMobileMenu();
       } else {
         navDrawer?.classList.add('is-open');
         navDrawer?.setAttribute('aria-hidden', 'false');
         menuToggle.classList.add('is-active');
         menuToggle.setAttribute('aria-expanded', 'true');
+        const firstLink = navDrawer?.querySelector('.mobile-nav-link');
+        firstLink?.focus();
+      }
+    });
+
+    // Close mobile drawer on Escape key or outside click
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navDrawer?.classList.contains('is-open')) {
+        closeMobileMenu();
+        menuToggle?.focus();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (
+        navDrawer?.classList.contains('is-open') &&
+        !header?.contains(e.target)
+      ) {
+        closeMobileMenu();
       }
     });
 
     // Close mobile drawer when clicking a link
     mobileLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        navDrawer?.classList.remove('is-open');
-        navDrawer?.setAttribute('aria-hidden', 'true');
-        menuToggle?.classList.remove('is-active');
-        menuToggle?.setAttribute('aria-expanded', 'false');
-      });
+      link.addEventListener('click', closeMobileMenu);
     });
 
     // Active Section Observer for Desktop Navigation
