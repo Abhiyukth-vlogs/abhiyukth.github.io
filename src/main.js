@@ -88,21 +88,25 @@ class App {
     });
 
     // Motion Pause / Resume Toggle
-    motionBtn?.addEventListener('click', () => {
-      if (!this.heroScene) return;
-      const isPaused = this.heroScene.togglePause();
-      const textSpan = motionBtn.querySelector('.motion-btn-text');
+    if (motionBtn) {
+      motionBtn.setAttribute('aria-pressed', 'false');
+      motionBtn.addEventListener('click', () => {
+        if (!this.heroScene) return;
+        const isPaused = this.heroScene.togglePause();
+        const textSpan = motionBtn.querySelector('.motion-btn-text');
 
-      if (isPaused) {
-        motionBtn.classList.add('is-paused');
-        motionBtn.setAttribute('aria-label', 'Resume 3D scene animation');
-        if (textSpan) textSpan.textContent = 'Resume Motion';
-      } else {
-        motionBtn.classList.remove('is-paused');
-        motionBtn.setAttribute('aria-label', 'Pause 3D scene animation');
-        if (textSpan) textSpan.textContent = 'Pause Motion';
-      }
-    });
+        motionBtn.setAttribute('aria-pressed', isPaused ? 'true' : 'false');
+        if (isPaused) {
+          motionBtn.classList.add('is-paused');
+          motionBtn.setAttribute('aria-label', 'Resume 3D scene animation');
+          if (textSpan) textSpan.textContent = 'Resume Motion';
+        } else {
+          motionBtn.classList.remove('is-paused');
+          motionBtn.setAttribute('aria-label', 'Pause 3D scene animation');
+          if (textSpan) textSpan.textContent = 'Pause Motion';
+        }
+      });
+    }
   }
 
   /* ---------------------------------------------------------
@@ -198,10 +202,11 @@ class App {
     const clearBtn = document.getElementById('search-clear-btn');
     const resetBtn = document.getElementById('reset-filters-btn');
 
-    // Category Tabs
-    tabs.forEach(tab => {
+    // Category Tabs & Keyboard Navigation (WAI-ARIA Tablist Pattern)
+    const tabsArr = Array.from(tabs);
+    tabsArr.forEach((tab, index) => {
       tab.addEventListener('click', () => {
-        tabs.forEach(t => {
+        tabsArr.forEach(t => {
           t.classList.remove('active');
           t.setAttribute('aria-selected', 'false');
         });
@@ -210,6 +215,25 @@ class App {
 
         this.activeCategory = tab.dataset.category || 'All';
         this.renderVideoCatalog();
+      });
+
+      tab.addEventListener('keydown', (e) => {
+        let targetIndex = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          targetIndex = (index + 1) % tabsArr.length;
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          targetIndex = (index - 1 + tabsArr.length) % tabsArr.length;
+        } else if (e.key === 'Home') {
+          targetIndex = 0;
+        } else if (e.key === 'End') {
+          targetIndex = tabsArr.length - 1;
+        }
+
+        if (targetIndex !== null) {
+          e.preventDefault();
+          tabsArr[targetIndex].focus();
+          tabsArr[targetIndex].click();
+        }
       });
     });
 
@@ -513,29 +537,51 @@ class App {
       }
     }, { passive: true });
 
-    // Mobile Hamburger Menu Toggle
+    // Mobile Hamburger Menu Toggle & Dismiss Handlers
+    const closeMobileDrawer = () => {
+      if (navDrawer?.classList.contains('is-open')) {
+        navDrawer.classList.remove('is-open');
+        navDrawer.setAttribute('aria-hidden', 'true');
+        menuToggle?.classList.remove('is-active');
+        menuToggle?.setAttribute('aria-expanded', 'false');
+        menuToggle?.focus();
+      }
+    };
+
     menuToggle?.addEventListener('click', () => {
       const isOpen = navDrawer?.classList.contains('is-open');
       if (isOpen) {
-        navDrawer?.classList.remove('is-open');
-        navDrawer?.setAttribute('aria-hidden', 'true');
-        menuToggle.classList.remove('is-active');
-        menuToggle.setAttribute('aria-expanded', 'false');
+        closeMobileDrawer();
       } else {
         navDrawer?.classList.add('is-open');
         navDrawer?.setAttribute('aria-hidden', 'false');
         menuToggle.classList.add('is-active');
         menuToggle.setAttribute('aria-expanded', 'true');
+        mobileLinks[0]?.focus();
+      }
+    });
+
+    // Close mobile drawer on Escape key or outside click
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navDrawer?.classList.contains('is-open')) {
+        closeMobileDrawer();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (
+        navDrawer?.classList.contains('is-open') &&
+        !navDrawer.contains(e.target) &&
+        !menuToggle?.contains(e.target)
+      ) {
+        closeMobileDrawer();
       }
     });
 
     // Close mobile drawer when clicking a link
     mobileLinks.forEach(link => {
       link.addEventListener('click', () => {
-        navDrawer?.classList.remove('is-open');
-        navDrawer?.setAttribute('aria-hidden', 'true');
-        menuToggle?.classList.remove('is-active');
-        menuToggle?.setAttribute('aria-expanded', 'false');
+        closeMobileDrawer();
       });
     });
 
