@@ -222,6 +222,21 @@ class App {
       this.renderVideoCatalog();
     });
 
+    // Keyboard Escape Handling in Search Input
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (this.searchQuery || searchInput.value) {
+          e.preventDefault();
+          searchInput.value = '';
+          this.searchQuery = '';
+          if (clearBtn) clearBtn.style.display = 'none';
+          this.renderVideoCatalog();
+        } else {
+          searchInput.blur();
+        }
+      }
+    });
+
     // Clear Search Button
     clearBtn?.addEventListener('click', () => {
       if (searchInput) searchInput.value = '';
@@ -245,6 +260,7 @@ class App {
       });
 
       this.renderVideoCatalog();
+      searchInput?.focus();
     });
   }
 
