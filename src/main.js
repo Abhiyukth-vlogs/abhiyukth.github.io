@@ -222,6 +222,14 @@ class App {
       this.renderVideoCatalog();
     });
 
+    // Escape key clears search query
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && searchInput.value) {
+        e.preventDefault();
+        clearBtn?.click();
+      }
+    });
+
     // Clear Search Button
     clearBtn?.addEventListener('click', () => {
       if (searchInput) searchInput.value = '';
@@ -513,19 +521,31 @@ class App {
       }
     }, { passive: true });
 
+    const closeMobileMenu = () => {
+      navDrawer?.classList.remove('is-open');
+      navDrawer?.setAttribute('aria-hidden', 'true');
+      menuToggle?.classList.remove('is-active');
+      menuToggle?.setAttribute('aria-expanded', 'false');
+    };
+
     // Mobile Hamburger Menu Toggle
     menuToggle?.addEventListener('click', () => {
       const isOpen = navDrawer?.classList.contains('is-open');
       if (isOpen) {
-        navDrawer?.classList.remove('is-open');
-        navDrawer?.setAttribute('aria-hidden', 'true');
-        menuToggle.classList.remove('is-active');
-        menuToggle.setAttribute('aria-expanded', 'false');
+        closeMobileMenu();
       } else {
         navDrawer?.classList.add('is-open');
         navDrawer?.setAttribute('aria-hidden', 'false');
-        menuToggle.classList.add('is-active');
-        menuToggle.setAttribute('aria-expanded', 'true');
+        menuToggle?.classList.add('is-active');
+        menuToggle?.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    // Escape key closes mobile drawer
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && navDrawer?.classList.contains('is-open')) {
+        closeMobileMenu();
+        menuToggle?.focus();
       }
     });
 
