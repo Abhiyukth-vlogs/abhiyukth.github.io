@@ -289,6 +289,21 @@ h1, h2, h3, h4, h5, h6 {
   outline-offset: 2px;
 }
 
+/* Enhanced Keyboard Focus Indicators for Accessibility */
+.tab-btn:focus-visible,
+.mode-btn:focus-visible,
+.motion-toggle-btn:focus-visible,
+.social-pill-btn:focus-visible,
+.featured-thumb-wrap:focus-visible,
+.video-card-thumb-wrap:focus-visible,
+.playlist-card:focus-visible,
+.search-clear-btn:focus-visible,
+.mobile-menu-toggle:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+  box-shadow: 0 0 10px var(--accent-cyan-glow);
+}
+
 .btn-primary {
   background: linear-gradient(135deg, var(--accent-purple), #7C3AED);
   color: #fff;
