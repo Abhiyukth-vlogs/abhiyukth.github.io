@@ -92,15 +92,26 @@ class App {
       if (!this.heroScene) return;
       const isPaused = this.heroScene.togglePause();
       const textSpan = motionBtn.querySelector('.motion-btn-text');
+      const svgIcon = motionBtn.querySelector('svg');
 
       if (isPaused) {
         motionBtn.classList.add('is-paused');
+        motionBtn.setAttribute('aria-pressed', 'true');
         motionBtn.setAttribute('aria-label', 'Resume 3D scene animation');
         if (textSpan) textSpan.textContent = 'Resume Motion';
+        if (svgIcon) {
+          svgIcon.setAttribute('class', 'icon-play');
+          svgIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+        }
       } else {
         motionBtn.classList.remove('is-paused');
+        motionBtn.setAttribute('aria-pressed', 'false');
         motionBtn.setAttribute('aria-label', 'Pause 3D scene animation');
         if (textSpan) textSpan.textContent = 'Pause Motion';
+        if (svgIcon) {
+          svgIcon.setAttribute('class', 'icon-pause');
+          svgIcon.innerHTML = '<rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect>';
+        }
       }
     });
   }
