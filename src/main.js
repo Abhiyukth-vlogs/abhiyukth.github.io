@@ -231,6 +231,26 @@ class App {
       this.renderVideoCatalog();
     });
 
+    // Global Keyboard Shortcut: '/' to focus search, 'Escape' to clear and blur
+    document.addEventListener('keydown', (e) => {
+      const isInputActive = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) ||
+                            document.activeElement?.isContentEditable;
+
+      if (e.key === '/' && !isInputActive) {
+        e.preventDefault();
+        searchInput?.focus();
+        searchInput?.select();
+      } else if (e.key === 'Escape' && document.activeElement === searchInput) {
+        if (this.searchQuery) {
+          if (searchInput) searchInput.value = '';
+          this.searchQuery = '';
+          if (clearBtn) clearBtn.style.display = 'none';
+          this.renderVideoCatalog();
+        }
+        searchInput.blur();
+      }
+    });
+
     // Reset Filters Button in Empty State
     resetBtn?.addEventListener('click', () => {
       this.activeCategory = 'All';
