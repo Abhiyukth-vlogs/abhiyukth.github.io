@@ -138,6 +138,9 @@ export class HeroScene {
     this.accentPointLight = new THREE.PointLight(0x8B5CF6, 3.5, 12, 1.2);
     this.accentPointLight.position.set(0, 0.5, 2.5);
     this.scene.add(this.accentPointLight);
+
+    // Pre-allocated reusable vector to eliminate GC allocations inside requestAnimationFrame loop
+    this.targetScaleVec = new THREE.Vector3();
   }
 
   buildObjects() {
@@ -645,7 +648,9 @@ export class HeroScene {
 
     if (this.controllerGroup && target.controller) {
       this.controllerGroup.position.lerp(target.controller.pos, lerpSpeed);
-      this.controllerGroup.scale.lerp(new THREE.Vector3(target.controller.scale, target.controller.scale, target.controller.scale), lerpSpeed);
+      // Optimization: Reuse pre-allocated targetScaleVec to avoid per-frame Vector3 allocations
+      this.targetScaleVec.setScalar(target.controller.scale);
+      this.controllerGroup.scale.lerp(this.targetScaleVec, lerpSpeed);
       
       // Floating bobbing motion
       if (!this.prefersReducedMotion && !this.isPaused) {
@@ -657,7 +662,9 @@ export class HeroScene {
 
     if (this.cameraGroup && target.camera) {
       this.cameraGroup.position.lerp(target.camera.pos, lerpSpeed);
-      this.cameraGroup.scale.lerp(new THREE.Vector3(target.camera.scale, target.camera.scale, target.camera.scale), lerpSpeed);
+      // Optimization: Reuse pre-allocated targetScaleVec to avoid per-frame Vector3 allocations
+      this.targetScaleVec.setScalar(target.camera.scale);
+      this.cameraGroup.scale.lerp(this.targetScaleVec, lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         const floatOffset = Math.cos(elapsedTime * 1.3) * 0.08;
@@ -668,7 +675,9 @@ export class HeroScene {
 
     if (this.playIconGroup && target.playIcon) {
       this.playIconGroup.position.lerp(target.playIcon.pos, lerpSpeed);
-      this.playIconGroup.scale.lerp(new THREE.Vector3(target.playIcon.scale, target.playIcon.scale, target.playIcon.scale), lerpSpeed);
+      // Optimization: Reuse pre-allocated targetScaleVec to avoid per-frame Vector3 allocations
+      this.targetScaleVec.setScalar(target.playIcon.scale);
+      this.playIconGroup.scale.lerp(this.targetScaleVec, lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         this.playIconGroup.rotation.y += 0.015;
