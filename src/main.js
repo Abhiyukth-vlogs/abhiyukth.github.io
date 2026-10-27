@@ -49,8 +49,9 @@ class App {
 
     try {
       // Lazy load Three.js 3D scene module dynamically
-      const { HeroScene } = await import('./scene.js');
+      const { HeroScene, initBackgroundScene } = await import('./scene.js');
       this.heroScene = new HeroScene(container, fallback);
+      initBackgroundScene();
     } catch (err) {
       console.warn('Failed to load 3D scene module, displaying fallback:', err);
       if (fallback) fallback.style.display = 'flex';

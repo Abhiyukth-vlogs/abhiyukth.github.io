@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 
+// Pre-allocated static reusable vector for lerp scale operations to avoid garbage collection allocations per frame
+const tempScaleVec = new THREE.Vector3();
+
 /**
  * Interactive 3D Hero Scene for Abhiyukth Vlogs
  * Built with procedural geometries: DualSense PS5 controller, stylized camera,
@@ -645,7 +648,8 @@ export class HeroScene {
 
     if (this.controllerGroup && target.controller) {
       this.controllerGroup.position.lerp(target.controller.pos, lerpSpeed);
-      this.controllerGroup.scale.lerp(new THREE.Vector3(target.controller.scale, target.controller.scale, target.controller.scale), lerpSpeed);
+      tempScaleVec.setScalar(target.controller.scale);
+      this.controllerGroup.scale.lerp(tempScaleVec, lerpSpeed);
       
       // Floating bobbing motion
       if (!this.prefersReducedMotion && !this.isPaused) {
@@ -657,7 +661,8 @@ export class HeroScene {
 
     if (this.cameraGroup && target.camera) {
       this.cameraGroup.position.lerp(target.camera.pos, lerpSpeed);
-      this.cameraGroup.scale.lerp(new THREE.Vector3(target.camera.scale, target.camera.scale, target.camera.scale), lerpSpeed);
+      tempScaleVec.setScalar(target.camera.scale);
+      this.cameraGroup.scale.lerp(tempScaleVec, lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         const floatOffset = Math.cos(elapsedTime * 1.3) * 0.08;
@@ -668,7 +673,8 @@ export class HeroScene {
 
     if (this.playIconGroup && target.playIcon) {
       this.playIconGroup.position.lerp(target.playIcon.pos, lerpSpeed);
-      this.playIconGroup.scale.lerp(new THREE.Vector3(target.playIcon.scale, target.playIcon.scale, target.playIcon.scale), lerpSpeed);
+      tempScaleVec.setScalar(target.playIcon.scale);
+      this.playIconGroup.scale.lerp(tempScaleVec, lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         this.playIconGroup.rotation.y += 0.015;
@@ -708,5 +714,284 @@ export class HeroScene {
     if (this.renderer && this.renderer.domElement && this.renderer.domElement.parentNode) {
       this.renderer.domElement.parentNode.removeChild(this.renderer.domElement);
     }
+  }
+}
+
+/**
+ * Initializes full-screen 3D background animation canvas (#bg-three-canvas)
+ * Consolidates Three.js dependency into single bundle, avoiding external CDN scripts.
+ */
+export function initBackgroundScene() {
+  const canvas = document.getElementById('bg-three-canvas');
+  if (!canvas) return null;
+
+  try {
+    const testCanvas = document.createElement('canvas');
+    const isWebGLAvailable = !!(window.WebGLRenderingContext && (testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl')));
+    if (!isWebGLAvailable) return null;
+
+    const COLOR_CYAN = 0x22D3EE;
+    const COLOR_PURPLE = 0x8B5CF6;
+    let prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x070911, 0.015);
+
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 8, 48);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+    // Particle texture creation
+    function createParticleTexture() {
+      const pCanvas = document.createElement('canvas');
+      pCanvas.width = 64;
+      pCanvas.height = 64;
+      const ctx = pCanvas.getContext('2d');
+      const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      grad.addColorStop(0.25, 'rgba(255, 255, 255, 0.85)');
+      grad.addColorStop(0.55, 'rgba(139, 92, 246, 0.4)');
+      grad.addColorStop(1, 'rgba(7, 9, 17, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 64, 64);
+      return new THREE.CanvasTexture(pCanvas);
+    }
+    const particleTexture = createParticleTexture();
+
+    // 2. Interactive Cyber Tech Wave Grid (55x55)
+    const gridCols = 55;
+    const gridRows = 55;
+    const gridSpacing = 2.2;
+    const gridCount = gridCols * gridRows;
+    const gridGeom = new THREE.BufferGeometry();
+    const gridPositions = new Float32Array(gridCount * 3);
+    const gridColors = new Float32Array(gridCount * 3);
+
+    // Pre-calculated arrays for grid X and Z coordinate values to avoid redundant loop arithmetic
+    const gxArray = new Float32Array(gridCols);
+    for (let i = 0; i < gridCols; i++) {
+      gxArray[i] = (i - gridCols / 2) * gridSpacing;
+    }
+    const gzArray = new Float32Array(gridRows);
+    for (let j = 0; j < gridRows; j++) {
+      gzArray[j] = (j - gridRows / 2) * gridSpacing;
+    }
+
+    const cCyan = new THREE.Color(COLOR_CYAN);
+    const cPurple = new THREE.Color(COLOR_PURPLE);
+    const tempColor = new THREE.Color();
+
+    let idx = 0;
+    for (let i = 0; i < gridCols; i++) {
+      const x = gxArray[i];
+      for (let j = 0; j < gridRows; j++) {
+        const z = gzArray[j];
+        const y = -14;
+
+        gridPositions[idx * 3] = x;
+        gridPositions[idx * 3 + 1] = y;
+        gridPositions[idx * 3 + 2] = z;
+
+        const dist = Math.sqrt(x * x + z * z) / 60;
+        const mixFactor = Math.min(Math.max(dist, 0), 1);
+        tempColor.copy(cPurple).lerp(cCyan, mixFactor);
+
+        gridColors[idx * 3] = tempColor.r;
+        gridColors[idx * 3 + 1] = tempColor.g;
+        gridColors[idx * 3 + 2] = tempColor.b;
+
+        idx++;
+      }
+    }
+
+    gridGeom.setAttribute('position', new THREE.BufferAttribute(gridPositions, 3));
+    gridGeom.setAttribute('color', new THREE.BufferAttribute(gridColors, 3));
+
+    const gridMat = new THREE.PointsMaterial({
+      size: 1.6,
+      map: particleTexture,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    const waveMesh = new THREE.Points(gridGeom, gridMat);
+    scene.add(waveMesh);
+
+    // 3. Floating Geometric Wireframe Shapes
+    const shapesGroup = new THREE.Group();
+    scene.add(shapesGroup);
+
+    const shapeConfigs = [
+      { geom: new THREE.IcosahedronGeometry(3.2, 0), color: COLOR_CYAN, pos: [-28, 12, -8], speed: [0.004, 0.006] },
+      { geom: new THREE.OctahedronGeometry(2.8, 0), color: COLOR_PURPLE, pos: [26, 14, -6], speed: [-0.005, 0.004] },
+      { geom: new THREE.TorusGeometry(3.6, 0.16, 16, 40), color: COLOR_CYAN, pos: [-24, -6, 4], speed: [0.006, -0.003] },
+      { geom: new THREE.DodecahedronGeometry(2.5, 0), color: COLOR_PURPLE, pos: [28, -8, 2], speed: [-0.004, -0.005] },
+      { geom: new THREE.IcosahedronGeometry(2.0, 0), color: COLOR_PURPLE, pos: [-16, 22, -18], speed: [0.005, 0.003] },
+      { geom: new THREE.OctahedronGeometry(2.2, 0), color: COLOR_CYAN, pos: [18, 20, -16], speed: [-0.003, 0.005] }
+    ];
+
+    const floatingObjects = [];
+    shapeConfigs.forEach((cfg, i) => {
+      const mat = new THREE.MeshBasicMaterial({
+        color: cfg.color,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.22,
+        blending: THREE.AdditiveBlending
+      });
+      const mesh = new THREE.Mesh(cfg.geom, mat);
+      mesh.position.set(cfg.pos[0], cfg.pos[1], cfg.pos[2]);
+      mesh.userData = {
+        baseY: cfg.pos[1],
+        speedX: cfg.speed[0],
+        speedY: cfg.speed[1],
+        phase: i * 1.3
+      };
+      shapesGroup.add(mesh);
+      floatingObjects.push(mesh);
+    });
+
+    // 4. Dust Particles
+    const dustCount = 180;
+    const dustGeom = new THREE.BufferGeometry();
+    const dustPositions = new Float32Array(dustCount * 3);
+    const dustColors = new Float32Array(dustCount * 3);
+
+    for (let d = 0; d < dustCount; d++) {
+      dustPositions[d * 3] = (Math.random() - 0.5) * 110;
+      dustPositions[d * 3 + 1] = (Math.random() - 0.5) * 80;
+      dustPositions[d * 3 + 2] = (Math.random() - 0.5) * 60;
+
+      const col = Math.random() > 0.5 ? cCyan : cPurple;
+      dustColors[d * 3] = col.r;
+      dustColors[d * 3 + 1] = col.g;
+      dustColors[d * 3 + 2] = col.b;
+    }
+
+    dustGeom.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+    dustGeom.setAttribute('color', new THREE.BufferAttribute(dustColors, 3));
+
+    const dustMat = new THREE.PointsMaterial({
+      size: 1.2,
+      map: particleTexture,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.45,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    const dustParticles = new THREE.Points(dustGeom, dustMat);
+    scene.add(dustParticles);
+
+    // 5. Interaction State
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+    let scrollY = window.pageYOffset || 0;
+    let targetScrollY = scrollY;
+    let isVisible = true;
+
+    window.addEventListener('mousemove', (e) => {
+      targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    }, { passive: true });
+
+    window.addEventListener('scroll', () => {
+      targetScrollY = window.pageYOffset || document.documentElement.scrollTop;
+    }, { passive: true });
+
+    document.addEventListener('visibilitychange', () => {
+      isVisible = !document.hidden;
+    });
+
+    function onWindowResize() {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    }
+    window.addEventListener('resize', onWindowResize, { passive: true });
+
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    motionQuery.addEventListener('change', (e) => {
+      prefersReducedMotion = e.matches;
+    });
+
+    // Pre-allocated array for column cosZ values to eliminate inner-loop trig calls
+    const cosZ = new Float32Array(gridRows);
+
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!isVisible) return;
+
+      const time = clock.getElapsedTime();
+      const motionFactor = prefersReducedMotion ? 0.2 : 1.0;
+
+      mouseX += (targetMouseX - mouseX) * 0.04;
+      mouseY += (targetMouseY - mouseY) * 0.04;
+      scrollY += (targetScrollY - scrollY) * 0.05;
+
+      camera.position.x = mouseX * 4;
+      camera.position.y = 8 - (mouseY * 3) - (scrollY * 0.008);
+      camera.lookAt(0, -2 - (scrollY * 0.004), 0);
+
+      // Optimized wave grid vertex updates:
+      // Hoist trigonometric calculations out of the inner loop (reduced from 6,050 to 110 calls per frame)
+      const t1 = time * 1.1 * motionFactor;
+      const t2 = time * 0.85 * motionFactor;
+
+      for (let j = 0; j < gridRows; j++) {
+        cosZ[j] = Math.cos(gzArray[j] * 0.14 + t2) * 1.8;
+      }
+
+      const posAttr = gridGeom.attributes.position;
+      const posArray = posAttr.array;
+      let pIdx = 0;
+
+      for (let i = 0; i < gridCols; i++) {
+        const sinX = Math.sin(gxArray[i] * 0.12 + t1) * 2.2;
+        const baseWaveY = -14 + sinX;
+
+        for (let j = 0; j < gridRows; j++) {
+          posArray[pIdx * 3 + 1] = baseWaveY + cosZ[j];
+          pIdx++;
+        }
+      }
+      posAttr.needsUpdate = true;
+
+      waveMesh.rotation.y = time * 0.015 * motionFactor;
+
+      floatingObjects.forEach((obj) => {
+        obj.rotation.x += obj.userData.speedX * motionFactor;
+        obj.rotation.y += obj.userData.speedY * motionFactor;
+        obj.position.y = obj.userData.baseY + Math.sin(time * 0.8 * motionFactor + obj.userData.phase) * 1.5;
+      });
+
+      dustParticles.rotation.y = time * 0.01 * motionFactor;
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
+    return { scene, renderer };
+  } catch (err) {
+    console.warn('Background WebGL Scene initialization failed:', err);
+    return null;
   }
 }
