@@ -91,16 +91,26 @@ class App {
     motionBtn?.addEventListener('click', () => {
       if (!this.heroScene) return;
       const isPaused = this.heroScene.togglePause();
-      const textSpan = motionBtn.querySelector('.motion-btn-text');
 
       if (isPaused) {
         motionBtn.classList.add('is-paused');
         motionBtn.setAttribute('aria-label', 'Resume 3D scene animation');
-        if (textSpan) textSpan.textContent = 'Resume Motion';
+        motionBtn.innerHTML = `
+          <svg class="icon-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          <span class="motion-btn-text">Resume Motion</span>
+        `;
       } else {
         motionBtn.classList.remove('is-paused');
         motionBtn.setAttribute('aria-label', 'Pause 3D scene animation');
-        if (textSpan) textSpan.textContent = 'Pause Motion';
+        motionBtn.innerHTML = `
+          <svg class="icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+            <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+            <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+          </svg>
+          <span class="motion-btn-text">Pause Motion</span>
+        `;
       }
     });
   }
@@ -198,8 +208,8 @@ class App {
     const clearBtn = document.getElementById('search-clear-btn');
     const resetBtn = document.getElementById('reset-filters-btn');
 
-    // Category Tabs
-    tabs.forEach(tab => {
+    // Category Tabs with WAI-ARIA Keyboard Navigation
+    tabs.forEach((tab, index) => {
       tab.addEventListener('click', () => {
         tabs.forEach(t => {
           t.classList.remove('active');
@@ -211,6 +221,31 @@ class App {
         this.activeCategory = tab.dataset.category || 'All';
         this.renderVideoCatalog();
       });
+
+      tab.addEventListener('keydown', (e) => {
+        let targetIndex = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          targetIndex = (index + 1) % tabs.length;
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          targetIndex = (index - 1 + tabs.length) % tabs.length;
+        }
+        if (targetIndex !== null) {
+          e.preventDefault();
+          tabs[targetIndex].focus();
+          tabs[targetIndex].click();
+        }
+      });
+    });
+
+    // Search Input with Escape Key Handler
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && searchInput.value) {
+        e.preventDefault();
+        searchInput.value = '';
+        this.searchQuery = '';
+        if (clearBtn) clearBtn.style.display = 'none';
+        this.renderVideoCatalog();
+      }
     });
 
     // Real-time Search Input
