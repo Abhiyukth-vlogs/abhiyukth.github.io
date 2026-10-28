@@ -90,6 +90,7 @@ export class HeroScene {
 
     const width = this.container.clientWidth || 600;
     const height = this.container.clientHeight || 500;
+    this.containerRect = this.container.getBoundingClientRect();
 
     this.camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
     this.camera.position.set(0, 0, 8.5);
@@ -517,7 +518,13 @@ export class HeroScene {
   }
 
   setupEvents() {
-    // Resize handler
+    // Resize & scroll handlers to update cached container dimensions
+    this.updateContainerRect = () => {
+      if (this.container) {
+        this.containerRect = this.container.getBoundingClientRect();
+      }
+    };
+
     this.handleResize = () => {
       if (!this.container || !this.renderer || !this.camera) return;
       const width = this.container.clientWidth;
@@ -527,13 +534,20 @@ export class HeroScene {
       this.camera.aspect = width / height;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(width, height);
+      this.updateContainerRect();
     };
     window.addEventListener('resize', this.handleResize);
+    window.addEventListener('scroll', this.updateContainerRect, { passive: true });
 
-    // Pointer move for gentle parallax (only on non-touch or large devices)
+    // Pointer move for gentle parallax (uses cached bounding rect to avoid reflows)
     this.handlePointerMove = (e) => {
       if (this.prefersReducedMotion || this.isPaused) return;
-      const rect = this.container.getBoundingClientRect();
+      if (!this.containerRect || this.containerRect.width === 0) {
+        this.updateContainerRect();
+      }
+      const rect = this.containerRect;
+      if (!rect || rect.width === 0) return;
+
       const normX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const normY = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
 
@@ -645,7 +659,9 @@ export class HeroScene {
 
     if (this.controllerGroup && target.controller) {
       this.controllerGroup.position.lerp(target.controller.pos, lerpSpeed);
-      this.controllerGroup.scale.lerp(new THREE.Vector3(target.controller.scale, target.controller.scale, target.controller.scale), lerpSpeed);
+      // Perf Optimization: Scalar LERP instead of creating new THREE.Vector3 per frame to eliminate GC overhead
+      const currentScale = this.controllerGroup.scale.x;
+      this.controllerGroup.scale.setScalar(currentScale + (target.controller.scale - currentScale) * lerpSpeed);
       
       // Floating bobbing motion
       if (!this.prefersReducedMotion && !this.isPaused) {
@@ -657,7 +673,9 @@ export class HeroScene {
 
     if (this.cameraGroup && target.camera) {
       this.cameraGroup.position.lerp(target.camera.pos, lerpSpeed);
-      this.cameraGroup.scale.lerp(new THREE.Vector3(target.camera.scale, target.camera.scale, target.camera.scale), lerpSpeed);
+      // Perf Optimization: Scalar LERP instead of creating new THREE.Vector3 per frame
+      const currentScale = this.cameraGroup.scale.x;
+      this.cameraGroup.scale.setScalar(currentScale + (target.camera.scale - currentScale) * lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         const floatOffset = Math.cos(elapsedTime * 1.3) * 0.08;
@@ -668,7 +686,9 @@ export class HeroScene {
 
     if (this.playIconGroup && target.playIcon) {
       this.playIconGroup.position.lerp(target.playIcon.pos, lerpSpeed);
-      this.playIconGroup.scale.lerp(new THREE.Vector3(target.playIcon.scale, target.playIcon.scale, target.playIcon.scale), lerpSpeed);
+      // Perf Optimization: Scalar LERP instead of creating new THREE.Vector3 per frame
+      const currentScale = this.playIconGroup.scale.x;
+      this.playIconGroup.scale.setScalar(currentScale + (target.playIcon.scale - currentScale) * lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         this.playIconGroup.rotation.y += 0.015;
@@ -697,6 +717,7 @@ export class HeroScene {
   destroy() {
     if (this.rafId) cancelAnimationFrame(this.rafId);
     window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener('scroll', this.updateContainerRect);
     window.removeEventListener('pointermove', this.handlePointerMove);
     this.container.removeEventListener('pointerdown', this.handlePointerDown);
     window.removeEventListener('pointermove', this.handleDragMove);
