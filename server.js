@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import axios from 'axios';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getShortsFeed } from './api/_lib/youtubeShorts.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -144,6 +145,142 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+/**
+ * GET /api/youtube/shorts & GET /api/shorts
+ * Returns automatically discovered, verified YouTube Shorts feed with 5-minute caching
+ */
+const shortsHandler = async (req, res) => {
+  try {
+    const feed = await getShortsFeed();
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+    return res.json(feed);
+  } catch (error) {
+    return res.status(200).json({
+      success: false,
+      error: error.message,
+      items: []
+    });
+  }
+};
+
+app.get('/api/youtube/shorts', shortsHandler);
+app.get('/api/shorts', shortsHandler);
+
+/**
+ * GET /api/auth/status
+ * Reports YouTube API and owner OAuth connection status
+ */
+app.get('/api/auth/status', (req, res) => {
+  const hasClientId = !!process.env.YOUTUBE_CLIENT_ID;
+  const hasClientSecret = !!process.env.YOUTUBE_CLIENT_SECRET;
+  const hasRefreshToken = !!process.env.YOUTUBE_REFRESH_TOKEN;
+  const isOAuthConnected = hasClientId && hasClientSecret && hasRefreshToken;
+
+  res.json({
+    status: 'ok',
+    channel: {
+      id: CHANNEL_ID,
+      handle: '@abhiyukthvlogs'
+    },
+    apiConfigured: !!API_KEY,
+    ownerOAuth: {
+      connected: isOAuthConnected,
+      scopes: isOAuthConnected ? [
+        'https://www.googleapis.com/auth/youtube.readonly',
+        'https://www.googleapis.com/auth/yt-analytics.readonly'
+      ] : []
+    },
+    syncCapabilities: {
+      autoDiscovery: true,
+      accurateClassification: isOAuthConnected ? 'authenticated_file_and_analytics' : 'public_route_and_duration_verification',
+      refreshIntervalMinutes: 5
+    }
+  });
+});
+
+/**
+ * GET /api/auth/youtube
+ * Initiates owner OAuth consent for YouTube read-only scopes
+ */
+app.get('/api/auth/youtube', (req, res) => {
+  const clientId = process.env.YOUTUBE_CLIENT_ID;
+  const redirectUri = process.env.YOUTUBE_REDIRECT_URI || `http://localhost:${PORT}/api/auth/youtube/callback`;
+  
+  if (!clientId) {
+    return res.status(400).send(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>OAuth Setup Required</title>
+      <style>body{font-family:sans-serif;background:#070911;color:#F5F7FF;padding:40px;line-height:1.6;}</style>
+      </head>
+      <body>
+        <h2 style="color:#22D3EE;">YouTube OAuth Setup Required</h2>
+        <p>To enable owner-level authenticated discovery (YouTube Analytics reports and exact <code>fileDetails</code> display aspect ratio), configure the following in your <code>.env</code> file:</p>
+        <pre style="background:#111525;padding:16px;border-radius:8px;color:#A7B0C0;">YOUTUBE_CLIENT_ID=your_oauth_client_id
+YOUTUBE_CLIENT_SECRET=your_oauth_client_secret
+YOUTUBE_REDIRECT_URI=http://localhost:${PORT}/api/auth/youtube/callback</pre>
+        <p>Refer to <code>.env.example</code> and <code>README.md</code> for the step-by-step setup.</p>
+        <p><a href="/" style="color:#8B5CF6;">&larr; Back to Website</a></p>
+      </body>
+      </html>
+    `);
+  }
+
+  const scopes = [
+    'https://www.googleapis.com/auth/youtube.readonly',
+    'https://www.googleapis.com/auth/yt-analytics.readonly'
+  ].join(' ');
+
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scopes)}&access_type=offline&prompt=consent`;
+
+  res.redirect(authUrl);
+});
+
+/**
+ * GET /api/auth/youtube/callback
+ * Exchanges code for tokens and guides saving the refresh token
+ */
+app.get('/api/auth/youtube/callback', async (req, res) => {
+  const code = req.query.code;
+  if (!code) {
+    return res.status(400).send('Missing authorization code from Google.');
+  }
+
+  try {
+    const clientId = process.env.YOUTUBE_CLIENT_ID;
+    const clientSecret = process.env.YOUTUBE_CLIENT_SECRET;
+    const redirectUri = process.env.YOUTUBE_REDIRECT_URI || `http://localhost:${PORT}/api/auth/youtube/callback`;
+
+    const tokenRes = await axios.post('https://oauth2.googleapis.com/token', {
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+      grant_type: 'authorization_code',
+      redirect_uri: redirectUri
+    });
+
+    const refreshToken = tokenRes.data?.refresh_token;
+
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>YouTube Connected</title>
+      <style>body{font-family:sans-serif;background:#070911;color:#F5F7FF;padding:40px;line-height:1.6;}</style>
+      </head>
+      <body>
+        <h2 style="color:#22D3EE;">YouTube Channel Authorization Successful!</h2>
+        <p>Your read-only connection to YouTube Analytics & Data API has been authorized.</p>
+        ${refreshToken ? `<p><strong>Refresh Token:</strong> <code>${refreshToken}</code></p>
+        <p>Add this to your <code>.env</code> file as <code>YOUTUBE_REFRESH_TOKEN=${refreshToken}</code> to persist automatic authenticated synchronization across restarts.</p>` : '<p>Already authorized. Refresh token preserved.</p>'}
+        <p><a href="/" style="color:#8B5CF6;">&larr; Return to Website</a></p>
+      </body>
+      </html>
+    `);
+  } catch (err) {
+    res.status(500).send('OAuth exchange failed: ' + (err.response?.data?.error_description || err.message));
+  }
+});
+
 // Serve frontend dist if built
 app.use(express.static(path.join(__dirname, 'dist')));
 
@@ -151,6 +288,7 @@ app.listen(PORT, () => {
   console.log(`=============================================`);
   console.log(`🚀 YouTube Backend Server running on http://localhost:${PORT}`);
   console.log(`📡 Subscribers Endpoint: http://localhost:${PORT}/api/subscribers`);
-  console.log(`🔒 YouTube API Key: ${API_KEY ? 'Configured & Secured' : 'NOT SET in .env'}`);
+  console.log(`🎬 Shorts Endpoint:      http://localhost:${PORT}/api/youtube/shorts`);
+  console.log(`🔒 YouTube API Key:      ${API_KEY ? 'Configured & Secured' : 'NOT SET in .env'}`);
   console.log(`=============================================`);
 });

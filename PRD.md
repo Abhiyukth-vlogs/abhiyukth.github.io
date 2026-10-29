@@ -66,6 +66,16 @@ The official website for **Abhiyukth Vlogs** serves as an interactive, digital h
 - **Event Card:** Highlights the latest or upcoming broadcast (e.g., *Ghost of Tsushima Director's Cut PS5* or special multi-streams).
 - **Stream Replay Quick-Play:** Integrated direct play action triggering the zero-friction modal player.
 
+### 3.4b Automatically Updating YouTube Shorts Section
+- **Automated Discovery Engine:** Discovers uploads playlist (`UUuG7-r1F3b2RzGoRFIe0MnQ`) from `@abhiyukthvlogs` and queries recent uploads.
+- **Accurate Multi-Layer Classification:**
+  - Route Verification: Validates candidate videos against `https://www.youtube.com/shorts/${id}` (200 = true Short; 303 = landscape video excluded).
+  - Duration & Date Rules: ≤60s for historical uploads; ≤180s (3 mins) for uploads on or after Oct 15, 2024.
+  - Optional Owner OAuth: `fileDetails.videoStreams[0]` aspect ratio (vertical: `height >= width`) and YouTube Analytics (`creatorContentType=SHORTS`).
+- **Responsive 9:16 Feed:** Latest 12 Shorts displayed in portrait orientation, 4 columns on desktop, 2 on tablets, and touch-swipeable row on mobile.
+- **Seamless Refresh & Caching:** 5-minute freshness interval with `stale-while-revalidate` headers. Page auto-polls every 5 minutes while visible.
+- **Dedicated 9:16 Portrait Modal Player:** Embedded iframe sized for vertical viewing with "Watch on YouTube" fallback.
+
 ### 3.5 Curated Video Catalog & Playlist Grid
 - **Category Filter Tabs:** Instant client-side filtering by "All", "Gaming", "Vlogs", and "Live Replays".
 - **Instant Search:** Real-time search by title, game name, or destination with instantaneous DOM updates and empty-state messaging.
@@ -74,6 +84,7 @@ The official website for **Abhiyukth Vlogs** serves as an interactive, digital h
 
 ### 3.6 Accessible Video Modal Player
 - **Click-to-Load Iframes:** YouTube iframe embeds are injected into the DOM only upon user click, preventing unnecessary initial data transfers and third-party trackers.
+- **Dual Mode Support:** 16:9 widescreen layout for long-form videos/streams; 9:16 portrait layout for Shorts.
 - **Focus & Keyboard Trap:** Trap focus inside the modal dialog while open, with `Escape` key listener for dismissal.
 - **Audio Cease:** Immediately destroys the iframe upon close to stop background audio playback.
 - **External Fallback:** Direct "Watch on YouTube" anchor for restricted playback environments.
@@ -98,28 +109,28 @@ The official website for **Abhiyukth Vlogs** serves as an interactive, digital h
                        │ (HTML5, Vanilla CSS/JS) │
                        └────────────┬────────────┘
                                     │
-               ┌────────────────────┼────────────────────┐
-               ▼                    ▼                    ▼
-     ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
-     │ Three.js 3D Hero │ │  3D Odometer JS  │ │ Accessible Modal │
-     │  Procedural Mesh │ │ Staggered Ribbon │ │  Lazy-load Embed │
-     └──────────────────┘ └──────────────────┘ └──────────────────┘
-                                    │
-                         GET /api/subscribers
-                                    │
-                     ┌──────────────┴──────────────┐
-                     ▼                             ▼
+               ┌────────────────────┼────────────────────┬────────────────────┐
+               ▼                    ▼                    ▼                    ▼
+     ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+     │ Three.js 3D Hero │ │  3D Odometer JS  │ │ YouTube Shorts JS│ │ Accessible Modal │
+     │  Procedural Mesh │ │ Staggered Ribbon │ │  9:16 Feed Engine│ │  (16:9 & 9:16)   │
+     └──────────────────┘ └──────────────────┘ └────────┬─────────┘ └──────────────────┘
+                                    │                   │
+                          GET /api/subscribers          │ GET /api/youtube/shorts
+                                    │                   │
+                     ┌──────────────┴──────────────┐   │
+                     ▼                             ▼   │
          ┌──────────────────────┐      ┌──────────────────────┐
          │ Node Express Backend │      │   Vercel Serverless  │
-         │     (server.js)      │      │  (api/subscribers.js)│
+         │     (server.js)      │      │(api/shorts.js, etc.) │
          └──────────┬───────────┘      └──────────┬───────────┘
                     │                             │
                     └──────────────┬──────────────┘
-                                   │ HTTPS + API Key (Private .env)
+                                   │ HTTPS + API Key / OAuth (Private .env)
                                    ▼
                     ┌─────────────────────────────┐
                     │    YouTube Data API v3      │
-                    │   (google.com/youtube)      │
+                    │   & YouTube Analytics API   │
                     └─────────────────────────────┘
 ```
 

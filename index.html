@@ -111,6 +111,7 @@
         <ul class="nav-list">
           <li><a href="#hero" class="nav-link active">Home</a></li>
           <li><a href="#featured" class="nav-link">Featured</a></li>
+          <li><a href="#shorts" class="nav-link">Shorts</a></li>
           <li><a href="#videos" class="nav-link">Videos</a></li>
           <li><a href="#live" class="nav-link">Live</a></li>
           <li><a href="#playlists" class="nav-link">Playlists</a></li>
@@ -157,6 +158,7 @@
           <ul class="mobile-nav-list">
             <li><a href="#hero" class="mobile-nav-link">Home</a></li>
             <li><a href="#featured" class="mobile-nav-link">Featured</a></li>
+            <li><a href="#shorts" class="mobile-nav-link">Shorts</a></li>
             <li><a href="#videos" class="mobile-nav-link">Videos</a></li>
             <li><a href="#live" class="mobile-nav-link">Live</a></li>
             <li><a href="#playlists" class="mobile-nav-link">Playlists</a></li>
@@ -340,6 +342,65 @@
 
         <div class="featured-card" id="featured-card">
           <!-- Dynamic rendering from channel.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 2b. Automatically Updating YouTube Shorts Section -->
+    <section class="section shorts-section" id="shorts" aria-labelledby="shorts-heading">
+      <div class="container" id="shorts-container">
+        <div class="section-header shorts-header">
+          <div class="header-titles">
+            <div class="section-tag">QUICK WATCH</div>
+            <h2 class="section-title" id="shorts-heading">Latest Shorts</h2>
+            <p class="section-subtitle">Quick moments, gaming highlights, bus stories, and travel snippets.</p>
+          </div>
+          <div class="shorts-header-actions">
+            <!-- Sync Status Indicator -->
+            <div class="shorts-status-pill is-online" id="shorts-status-pill" title="Automatic feed freshness indicator">
+              <span class="status-pulse-dot" aria-hidden="true"></span>
+              <span class="status-text" id="shorts-status-text">Live Sync • Just now</span>
+            </div>
+            <!-- Mobile Horizontal Scroll Navigation Buttons -->
+            <div class="shorts-mobile-nav" aria-label="Shorts carousel navigation">
+              <button type="button" class="shorts-nav-arrow" id="shorts-scroll-prev" aria-label="Previous shorts">
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                  <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+              <button type="button" class="shorts-nav-arrow" id="shorts-scroll-next" aria-label="Next shorts">
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9:16 Portrait Cards Grid / Swipeable Carousel -->
+        <div class="shorts-grid" id="shorts-grid" aria-live="polite">
+          <!-- Populated dynamically by shortsSection.js -->
+        </div>
+
+        <!-- Shorts Footer Actions -->
+        <div class="shorts-footer-actions">
+          <button type="button" class="btn btn-secondary" id="shorts-load-more-btn">
+            Load More Shorts
+          </button>
+          <a 
+            href="https://www.youtube.com/@abhiyukthvlogs/shorts" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="btn btn-primary btn-shorts-yt"
+          >
+            <svg class="icon-yt" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="M17.77 10.32l-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.94c-1.29.68-2.07 2.04-2 3.49.07 1.42.93 2.67 2.22 3.25.03.01 1.2.5 1.2.5L6 14.94c-1.83.97-2.53 3.24-1.56 5.07.97 1.83 3.24 2.53 5.07 1.56l8.5-4.5c1.29-.68 2.06-2.04 1.99-3.49-.07-1.42-.94-2.68-2.23-3.26zM10 14.5v-5l4.5 2.5-4.5 2.5z"/>
+            </svg>
+            <span>View All Shorts on YouTube</span>
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </a>
         </div>
       </div>
     </section>
@@ -734,6 +795,8 @@
 
       <div class="footer-links">
         <a href="#hero">Home</a>
+        <a href="#featured">Featured</a>
+        <a href="#shorts">Shorts</a>
         <a href="#videos">Videos</a>
         <a href="#live">Live</a>
         <a href="#playlists">Playlists</a>

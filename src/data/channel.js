@@ -88,6 +88,165 @@ export const channelConfig = {
     thumbnail: 'https://i.ytimg.com/vi/gxpAlDUWIOQ/hq720.jpg'
   },
 
+  // Verified YouTube Shorts Catalog (Snapshot + Fallback)
+  // Auto-updating feed synchronizes dynamically via /api/youtube/shorts
+  shorts: [
+    {
+      id: 'meaMV8_jiAk',
+      title: 'ഒടുവിൽ ആ കിടിലൻ കാഴ്ച നേരിട്ട് കണ്ടു! 🤩🔥 | Bus Spotting',
+      views: '395+ views',
+      timeAgo: 'Recent',
+      publishedAt: '2026-10-29T13:13:50Z',
+      duration: '0:08',
+      durationSeconds: 8,
+      thumbnail: 'https://i.ytimg.com/vi/meaMV8_jiAk/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: 'zOaw1Y1JJl0',
+      title: 'രോമാഞ്ചം വരുന്ന എൻട്രി! വെയിറ്റ് ഫോർ ഇറ്റ് 🥶🔥 | Komban Tourist Bus',
+      views: '276+ views',
+      timeAgo: 'Recent',
+      publishedAt: '2026-10-29T13:10:07Z',
+      duration: '0:24',
+      durationSeconds: 24,
+      thumbnail: 'https://i.ytimg.com/vi/zOaw1Y1JJl0/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: 'KvOC-jGIA7U',
+      title: 'ഈ വൈബ് വേറെ എങ്ങും കിട്ടില്ല! 💥 | Kerala Tourist Bus',
+      views: '96+ views',
+      timeAgo: 'Recent',
+      publishedAt: '2026-10-29T13:08:31Z',
+      duration: '0:30',
+      durationSeconds: 30,
+      thumbnail: 'https://i.ytimg.com/vi/KvOC-jGIA7U/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: '46v2NN0qgWU',
+      title: 'ഈ എൻട്രി കണ്ടാൽ ആരും ഒന്ന് നോക്കിപ്പോകും! 😱🔥 | Komban Mass',
+      views: '312+ views',
+      timeAgo: 'Recent',
+      publishedAt: '2026-10-29T13:07:28Z',
+      duration: '0:24',
+      durationSeconds: 24,
+      thumbnail: 'https://i.ytimg.com/vi/46v2NN0qgWU/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: 'SMZVQ9PGK_I',
+      title: 'ആരാധകരുടെ നടുവിലൂടെ അവൻ വരുന്നു 🔥 | Komban Tourist Bus #shorts #komban',
+      views: '838+ views',
+      timeAgo: 'Recent',
+      publishedAt: '2026-10-29T10:54:06Z',
+      duration: '0:23',
+      durationSeconds: 23,
+      thumbnail: 'https://i.ytimg.com/vi/SMZVQ9PGK_I/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: 'rpC1djTx4LM',
+      title: 'കൊമ്പൻ ഗദ്ദാഫിയുടെ മാസ്സ് ലുക്ക്! 🔥😈 | KOMBaN GADDAFI Bus Edit #shorts',
+      views: '1.1K+ views',
+      timeAgo: 'Today',
+      publishedAt: '2026-10-29T02:40:18Z',
+      duration: '0:26',
+      durationSeconds: 26,
+      thumbnail: 'https://i.ytimg.com/vi/rpC1djTx4LM/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: 'cGZKzygcVgk',
+      title: 'The Beast KALIYAN ⚡ ബസ്സിനുള്ളിലെ ആ മാസ്സ് സൗണ്ട്! | Komban Tourist Bus Kerala',
+      views: '1.4K+ views',
+      timeAgo: 'Yesterday',
+      publishedAt: '2026-10-28T02:03:21Z',
+      duration: '0:44',
+      durationSeconds: 44,
+      thumbnail: 'https://i.ytimg.com/vi/cGZKzygcVgk/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: 'iA3cwLWYIbQ',
+      title: '@reporterlive -ലും കൊമ്പന്റെ മാസ്സ് എൻട്രി 🔥 | Kerala Tourist Bus Thug Life',
+      views: '11.4K+ views',
+      timeAgo: '2 days ago',
+      publishedAt: '2026-10-27T04:43:31Z',
+      duration: '0:17',
+      durationSeconds: 17,
+      thumbnail: 'https://i.ytimg.com/vi/iA3cwLWYIbQ/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: 'BoCyUIZo-jE',
+      title: 'ഇതാണ് കൊമ്പന്റെ പവർ 💥🔥 | Komban Tourist Bus Mass Status',
+      views: '1.2K+ views',
+      timeAgo: '3 days ago',
+      publishedAt: '2026-10-26T12:44:11Z',
+      duration: '0:13',
+      durationSeconds: 13,
+      thumbnail: 'https://i.ytimg.com/vi/BoCyUIZo-jE/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: 'HTQSG5koicc',
+      title: 'കൊമ്പൻ വന്നാൽ വൈബ് വേറെ ലെവൽ! 🔥 | Komban Holidays #shorts @reporterlive',
+      views: '2.5K+ views',
+      timeAgo: '3 days ago',
+      publishedAt: '2026-10-26T05:03:57Z',
+      duration: '0:19',
+      durationSeconds: 19,
+      thumbnail: 'https://i.ytimg.com/vi/HTQSG5koicc/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: 'DFyd3jeC5Jw',
+      title: 'വീര... ഒത്തക്ക് ഒത്ത ഇറങ്ങി നിക്കണം! 🔥 | Komban Mass Entry',
+      views: '1.6K+ views',
+      timeAgo: '4 days ago',
+      publishedAt: '2026-10-25T09:58:45Z',
+      duration: '0:36',
+      durationSeconds: 36,
+      thumbnail: 'https://i.ytimg.com/vi/DFyd3jeC5Jw/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: 'QxORffjaNMU',
+      title: 'The Boss is Here 😈 | Komban Mass Edit',
+      views: '1.5K+ views',
+      timeAgo: '4 days ago',
+      publishedAt: '2026-10-25T09:58:32Z',
+      duration: '0:29',
+      durationSeconds: 29,
+      thumbnail: 'https://i.ytimg.com/vi/QxORffjaNMU/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: 'PvmrwoXvzwE',
+      title: '🔥 Komban Holidays 🚌 | റോഡിലെ മാസ്സ് എൻട്രി! 😈🔥 | Kerala Bus Edit #Shorts',
+      views: '1.7K+ views',
+      timeAgo: '1 week ago',
+      publishedAt: '2026-10-21T12:51:35Z',
+      duration: '0:20',
+      durationSeconds: 20,
+      thumbnail: 'https://i.ytimg.com/vi/PvmrwoXvzwE/hq720.jpg',
+      classification: 'confirmed'
+    },
+    {
+      id: '7O3M2aeBVOk',
+      title: 'നിങ്ങളുടെ സപ്പോർട്ടിന് ഒരായിരം നന്ദി! ❤️ 5.7K YT Fam & 13.8K Insta Views 🎉 #shorts',
+      views: '64+ views',
+      timeAgo: '2 weeks ago',
+      publishedAt: '2026-10-16T15:48:21Z',
+      duration: '0:14',
+      durationSeconds: 14,
+      thumbnail: 'https://i.ytimg.com/vi/7O3M2aeBVOk/hq720.jpg',
+      classification: 'confirmed'
+    }
+  ],
+
   // Verified Video Gallery Catalog
   // Category tags: 'Gaming' | 'Vlogs' | 'Live Replays'
   videos: [

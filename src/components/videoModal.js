@@ -12,6 +12,7 @@ export class VideoModal {
     this.titleEl = document.getElementById('modal-title');
     this.playerContainer = document.getElementById('modal-player-container');
     this.externalLink = document.getElementById('modal-external-link');
+    this.modalDialog = this.modalEl?.querySelector('.modal-dialog');
     this.triggerElement = null;
 
     this.init();
@@ -46,22 +47,34 @@ export class VideoModal {
     return this.modalEl?.classList.contains('is-open');
   }
 
-  open(videoId, title, triggerEl = null) {
+  open(videoId, title, triggerEl = null, isShort = false) {
     this.triggerElement = triggerEl;
 
     if (this.titleEl) {
-      this.titleEl.textContent = title || 'Abhiyukth Vlogs Video';
+      this.titleEl.textContent = title || (isShort ? 'Abhiyukth Vlogs Short' : 'Abhiyukth Vlogs Video');
     }
 
     if (this.externalLink) {
-      this.externalLink.href = `https://www.youtube.com/watch?v=${videoId}`;
+      this.externalLink.href = isShort
+        ? `https://www.youtube.com/shorts/${videoId}`
+        : `https://www.youtube.com/watch?v=${videoId}`;
+      this.externalLink.setAttribute('aria-label', `Watch ${title || 'video'} on YouTube`);
+    }
+
+    if (this.modalDialog) {
+      if (isShort) {
+        this.modalDialog.classList.add('is-portrait');
+      } else {
+        this.modalDialog.classList.remove('is-portrait');
+      }
     }
 
     // Embed responsive YouTube iframe with autoplay and secure origin params
     if (this.playerContainer) {
       const sanitizedTitle = (title || 'YouTube Video Player').replace(/"/g, '&quot;');
+      const portraitClass = isShort ? ' is-portrait' : '';
       this.playerContainer.innerHTML = `
-        <div class="modal-iframe-wrapper">
+        <div class="modal-iframe-wrapper${portraitClass}">
           <iframe
             src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1"
             title="${sanitizedTitle}"
@@ -90,6 +103,10 @@ export class VideoModal {
     // Immediately clear iframe to cease any playing audio/video
     if (this.playerContainer) {
       this.playerContainer.innerHTML = '';
+    }
+
+    if (this.modalDialog) {
+      this.modalDialog.classList.remove('is-portrait');
     }
 
     this.modalEl.classList.remove('is-open');

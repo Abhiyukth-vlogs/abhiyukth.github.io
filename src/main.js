@@ -1,6 +1,7 @@
 import { channelConfig } from './data/channel.js';
 import { VideoModal } from './components/videoModal.js';
 import { Odometer } from './components/odometer.js';
+import { ShortsSection } from './components/shortsSection.js';
 
 const FALLBACK_AVATAR = `${import.meta.env.BASE_URL}assets/avatar-fallback.svg`;
 
@@ -12,6 +13,7 @@ class App {
   constructor() {
     this.videoModal = null;
     this.heroScene = null;
+    this.shortsSection = null;
     this.activeCategory = 'All';
     this.searchQuery = '';
 
@@ -25,6 +27,7 @@ class App {
 
     // 2. Render Page Sections
     this.renderFeaturedVideo();
+    this.initShortsSection();
     this.renderVideoCatalog();
     this.renderLiveSection();
     this.renderPlaylists();
@@ -36,6 +39,13 @@ class App {
     this.setupNavigation();
     this.setupBackToTop();
     this.updateCopyright();
+  }
+
+  /* ---------------------------------------------------------
+     YouTube Shorts Auto-Updating Section
+     --------------------------------------------------------- */
+  initShortsSection() {
+    this.shortsSection = new ShortsSection(this.videoModal);
   }
 
   /* ---------------------------------------------------------

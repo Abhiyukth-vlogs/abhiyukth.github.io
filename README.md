@@ -6,6 +6,89 @@ A modern, responsive, high-performance website for the YouTube channel **Abhiyuk
 
 ## 🎮 Highlights & Architecture
 
+```mermaid
+flowchart TD
+
+subgraph group_client["Channel Website"]
+  node_app["App Orchestrator<br/>[main.js]"]
+end
+
+subgraph group_content["Channel Content"]
+  node_channel["Channel Configuration<br/>[channel.js]"]
+  node_featured["Featured Video<br/>[main.js]"]
+  node_shorts["YouTube Shorts Feed<br/>[shortsSection.js]"]
+  node_catalog["Video Catalog<br/>[main.js]"]
+  node_live["Live Replays<br/>[main.js]"]
+  node_playlists["Playlist Showcase<br/>[main.js]"]
+  node_profile["Channel Profile<br/>[main.js]"]
+  node_social["Social Links<br/>[channel.js]"]
+end
+
+subgraph group_interaction["Interactive Features"]
+  node_modal["Video Modal<br/>[videoModal.js]"]
+  node_youtube["YouTube Player (16:9 & 9:16)"]
+  node_hero["3D Hero Scene<br/>[scene.js]"]
+  node_odometer["Subscriber Odometer<br/>[odometer.js]"]
+end
+
+subgraph group_stats["Backend & Serverless API"]
+  node_express["Express Backend Server<br/>[server.js]"]
+  node_vercel["Vercel Serverless Functions<br/>[api/shorts.js, api/subscribers.js]"]
+  node_shorts_svc["Shorts Discovery Engine<br/>[api/_lib/youtubeShorts.js]"]
+  node_youtube_api["YouTube Data API v3 & Analytics"]
+end
+
+node_visitor(("Visitor"))
+
+node_visitor -->|"browses"| node_app
+node_app -->|"reads content"| node_channel
+node_app -->|"renders"| node_featured
+node_app -->|"renders 9:16 feed"| node_shorts
+node_app -->|"renders and filters"| node_catalog
+node_app -->|"renders"| node_live
+node_app -->|"renders"| node_playlists
+node_app -->|"renders"| node_profile
+node_app -->|"uses links"| node_social
+node_shorts -->|"fetches live / cached"| node_express
+node_shorts -->|"fetches live / cached"| node_vercel
+node_app -->|"opens 16:9 & 9:16 modal"| node_modal
+node_modal -->|"embeds on demand"| node_youtube
+node_app -->|"loads dynamically"| node_hero
+node_app -->|"updates"| node_odometer
+node_express -->|"discovers shorts"| node_shorts_svc
+node_vercel -->|"discovers shorts"| node_shorts_svc
+node_shorts_svc -->|"discovers & verifies"| node_youtube_api
+node_express -->|"fetches statistics"| node_youtube_api
+node_vercel -->|"fetches statistics"| node_youtube_api
+
+click node_app "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/src/main.js"
+click node_channel "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/src/data/channel.js"
+click node_featured "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/src/main.js"
+click node_catalog "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/src/main.js"
+click node_live "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/src/main.js"
+click node_playlists "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/src/main.js"
+click node_profile "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/src/main.js"
+click node_social "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/src/data/channel.js"
+click node_modal "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/src/components/videoModal.js"
+click node_hero "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/src/scene.js"
+click node_odometer "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/src/components/odometer.js"
+click node_express "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/server.js"
+click node_vercel "https://github.com/abhiyukth-vlogs/abhiyukth.github.io/blob/main/api/subscribers.js"
+
+classDef toneNeutral fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a
+classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554
+classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f
+classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
+classDef toneIndigo fill:#e0e7ff,stroke:#4f46e5,stroke-width:1.5px,color:#312e81
+classDef toneTeal fill:#ccfbf1,stroke:#0f766e,stroke-width:1.5px,color:#134e4a
+class node_app toneBlue
+class node_channel,node_featured,node_catalog,node_live,node_playlists,node_profile,node_social toneAmber
+class node_modal,node_youtube,node_hero,node_odometer toneMint
+class node_express,node_vercel,node_youtube_api toneRose
+class node_visitor toneIndigo
+```
+
 - **Interactive 3D Hero (Three.js)**:
   - Procedurally generated modern PS5 DualSense controller and stylized camera (no external 3D model assets to fail or slow down loading).
   - Mode toggle: **Gaming** vs **Vlogs** transitions focal objects, rotation, and neon lighting.
@@ -138,6 +221,42 @@ In `src/data/channel.js`, add new items to the `videos` array:
   thumbnail: 'https://i.ytimg.com/vi/YOUTUBE_VIDEO_ID/hq720.jpg'
 }
 ```
+
+### 📱 YouTube Shorts Auto-Updating Feed & Classification
+The website features an automated YouTube Shorts synchronization pipeline that automatically surfaces new public Shorts from [@abhiyukthvlogs](https://www.youtube.com/@abhiyukthvlogs) without manual video ID additions or redeployments:
+
+1. **Automatic Discovery Engine**:
+   - Endpoint: `/api/youtube/shorts` and `/api/shorts` (Express `server.js` and Vercel serverless functions).
+   - Resolves uploads playlist (`UUuG7-r1F3b2RzGoRFIe0MnQ`) from `@abhiyukthvlogs`.
+   - Discovers new uploads via `playlistItems.list` and batches details via `videos.list`.
+   - Filters only public, processed videos belonging strictly to `@abhiyukthvlogs`.
+2. **Accurate Multi-Layer Classification**:
+   - **Public Route Verification**: Checks candidate videos against `https://www.youtube.com/shorts/${id}` with redirect inspection (HTTP 200 = True Short; HTTP 302/303 redirect to `/watch?v=` = Landscape video, accurately excluded).
+   - **Upload-Date Rules & Duration**: Enforces YouTube upload-date rules (≤60s prior to Oct 15, 2024; ≤180s for uploads after Oct 15, 2024 with vertical/square orientation).
+   - **Owner OAuth (Optional)**: Connects to YouTube Analytics (`creatorContentType=SHORTS`) and inspects authenticated `fileDetails.videoStreams[0]` aspect ratio (vertical: `height >= width`).
+3. **Resilience & Caching**:
+   - Shared 5-minute freshness interval (`s-maxage=300, stale-while-revalidate=600`).
+   - Serves cached responses across visitors to conserve YouTube API quotas.
+   - During temporary API limits or network issues, serves stale cache or the bundled verified channel snapshot. The website never breaks.
+4. **Interactive Playback**:
+   - 9:16 portrait cards with original Malayalam titles, duration pill, and YouTube view counts.
+   - Dedicated 9:16 portrait modal player with responsive vertical YouTube embed and "Watch on YouTube" fallback.
+   - Swipeable carousel on phones and 4-column responsive grid on desktop.
+
+### 🔑 Connecting Channel Owner OAuth (One-Time Setup)
+While the site works out-of-the-box with public YouTube Data API discovery and route verification, channel owners can optionally connect OAuth for exact `fileDetails` and YouTube Analytics report integration:
+
+1. Create an OAuth 2.0 Client ID in [Google Cloud Console](https://console.cloud.google.com/apis/credentials) with Authorized Redirect URI:
+   - `http://localhost:5000/api/auth/youtube/callback` (or your production Vercel domain URL)
+2. Add the client ID and secret to your `.env` file:
+   ```bash
+   YOUTUBE_CLIENT_ID=your_oauth_client_id
+   YOUTUBE_CLIENT_SECRET=your_oauth_client_secret
+   YOUTUBE_REDIRECT_URI=http://localhost:5000/api/auth/youtube/callback
+   ```
+3. Visit `http://localhost:5000/api/auth/youtube` in your browser and authorize the read-only scopes.
+4. The callback page will display your `YOUTUBE_REFRESH_TOKEN`. Save it into `.env` to keep authenticated sync permanently active!
+
 
 ### How to Add Playlists
 In `src/data/channel.js`, add items to `playlists`:
