@@ -18,6 +18,9 @@ export class HeroScene {
     this.isVisible = true;
     this.clock = new THREE.Clock();
     
+    // Reusable target vector to avoid per-frame garbage collection allocations in animate()
+    this._targetScaleVector = new THREE.Vector3();
+
     // Pointer & Parallax
     this.pointer = { x: 0, y: 0, targetX: 0, targetY: 0 };
     this.drag = {
@@ -614,7 +617,6 @@ export class HeroScene {
       return;
     }
 
-    const delta = this.clock.getDelta();
     const elapsedTime = this.clock.getElapsedTime();
 
     // 1. Pointer Parallax smoothing (LERP)
@@ -643,9 +645,11 @@ export class HeroScene {
     const target = this.modeTargets[this.currentMode];
     const lerpSpeed = 0.06;
 
+    // Optimization: Reuse this._targetScaleVector to avoid allocating 3 Vector3 objects per frame in the 60FPS animation loop
     if (this.controllerGroup && target.controller) {
       this.controllerGroup.position.lerp(target.controller.pos, lerpSpeed);
-      this.controllerGroup.scale.lerp(new THREE.Vector3(target.controller.scale, target.controller.scale, target.controller.scale), lerpSpeed);
+      this._targetScaleVector.setScalar(target.controller.scale);
+      this.controllerGroup.scale.lerp(this._targetScaleVector, lerpSpeed);
       
       // Floating bobbing motion
       if (!this.prefersReducedMotion && !this.isPaused) {
@@ -657,7 +661,8 @@ export class HeroScene {
 
     if (this.cameraGroup && target.camera) {
       this.cameraGroup.position.lerp(target.camera.pos, lerpSpeed);
-      this.cameraGroup.scale.lerp(new THREE.Vector3(target.camera.scale, target.camera.scale, target.camera.scale), lerpSpeed);
+      this._targetScaleVector.setScalar(target.camera.scale);
+      this.cameraGroup.scale.lerp(this._targetScaleVector, lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         const floatOffset = Math.cos(elapsedTime * 1.3) * 0.08;
@@ -668,7 +673,8 @@ export class HeroScene {
 
     if (this.playIconGroup && target.playIcon) {
       this.playIconGroup.position.lerp(target.playIcon.pos, lerpSpeed);
-      this.playIconGroup.scale.lerp(new THREE.Vector3(target.playIcon.scale, target.playIcon.scale, target.playIcon.scale), lerpSpeed);
+      this._targetScaleVector.setScalar(target.playIcon.scale);
+      this.playIconGroup.scale.lerp(this._targetScaleVector, lerpSpeed);
 
       if (!this.prefersReducedMotion && !this.isPaused) {
         this.playIconGroup.rotation.y += 0.015;
