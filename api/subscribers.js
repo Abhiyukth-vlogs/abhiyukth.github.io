@@ -1,10 +1,33 @@
 import axios from 'axios';
 
 // Vercel Serverless Function Handler
+const defaultAllowedOrigins = [
+  'https://abhiyukth.github.io',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5000',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5000'
+];
+
+const envAllowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
+  : [];
+
+const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...envAllowedOrigins])];
+
 export default async function handler(req, res) {
-  // Enable CORS
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Enable restricted CORS
+  const reqOrigin = req.headers.origin;
+  if (reqOrigin && allowedOrigins.includes(reqOrigin)) {
+    res.setHeader('Access-Control-Allow-Origin', reqOrigin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else if (!reqOrigin) {
+    // If no origin header (e.g. same-origin or non-browser server requests)
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
+  }
+
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
   res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');

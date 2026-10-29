@@ -26,9 +26,33 @@ let cache = {
 };
 const CACHE_TTL_MS = 60 * 1000; // 60 seconds
 
+// CORS configuration - Restrict allowed origins to trusted domains
+const defaultAllowedOrigins = [
+  'https://abhiyukth.github.io',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:5000',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5000'
+];
+
+const envAllowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
+  : [];
+
+const allowedOrigins = [...new Set([...defaultAllowedOrigins, ...envAllowedOrigins])];
+
 // Middlewares
 app.use(cors({
-  origin: '*', // Allow requests from local dev and deployed frontend
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g., same-origin, curl requests, server-to-server)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
   methods: ['GET']
 }));
 app.use(express.json());
