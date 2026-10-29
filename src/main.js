@@ -2,8 +2,10 @@ import { channelConfig } from './data/channel.js';
 import { VideoModal } from './components/videoModal.js';
 import { Odometer } from './components/odometer.js';
 import { ShortsSection } from './components/shortsSection.js';
+import { LiveSection } from './components/liveSection.js';
 
-const FALLBACK_AVATAR = `${import.meta.env.BASE_URL}assets/avatar-fallback.svg`;
+const BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || './';
+const FALLBACK_AVATAR = `${BASE}assets/avatar-fallback.svg`;
 
 /**
  * Main Application Orchestrator for Abhiyukth Vlogs
@@ -14,6 +16,7 @@ class App {
     this.videoModal = null;
     this.heroScene = null;
     this.shortsSection = null;
+    this.liveSection = null;
     this.activeCategory = 'All';
     this.searchQuery = '';
 
@@ -357,112 +360,10 @@ class App {
   }
 
   /* ---------------------------------------------------------
-     Live Streams Section
+     Live Streams Section (Auto-Synchronized via LiveSection)
      --------------------------------------------------------- */
   renderLiveSection() {
-    const container = document.getElementById('live-container');
-    if (!container) return;
-
-    const liveData = channelConfig.liveStatus;
-    const isCurrentlyLive = liveData.isLive;
-
-    container.innerHTML = `
-      <div class="live-main-card">
-        <div class="live-status-bar">
-          <div class="live-indicator ${isCurrentlyLive ? 'is-live' : 'is-offline'}">
-            <span class="badge-dot" style="${isCurrentlyLive ? 'background: #FF0033;' : 'background: #A7B0C0;'}"></span>
-            <span>${isCurrentlyLive ? 'LIVE BROADCASTING' : liveData.badgeText}</span>
-          </div>
-          <span class="live-category-badge">${liveData.category}</span>
-        </div>
-
-        <div 
-          class="featured-thumb-wrap" 
-          id="live-thumb-trigger" 
-          tabindex="0" 
-          role="button" 
-          aria-label="Watch stream: ${this.escapeHtml(liveData.liveTitle)}"
-        >
-          <img 
-            src="https://i.ytimg.com/vi/${liveData.videoId}/hq720.jpg" 
-            alt="${this.escapeHtml(liveData.liveTitle)}" 
-            class="featured-thumb-img" 
-            loading="lazy"
-            onerror="this.src='${FALLBACK_AVATAR}'"
-          />
-          <div class="thumb-play-overlay" aria-hidden="true">
-            <div class="play-circle">
-              <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div class="video-card-content" style="padding: 24px;">
-          <h3 class="featured-title" style="font-size: 1.35rem;">${this.escapeHtml(liveData.liveTitle)}</h3>
-          <p class="featured-desc" style="font-size: 0.94rem;">${this.escapeHtml(liveData.note)}</p>
-
-          <div class="featured-actions" style="margin-top: 8px;">
-            <button type="button" class="btn btn-primary btn-sm" id="live-play-btn">
-              <span>Watch Stream Replay</span>
-            </button>
-            <a 
-              href="${channelConfig.links.streams}" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              class="btn btn-secondary btn-sm"
-            >
-              <span>Visit Live Tab on YouTube</span>
-              <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" aria-hidden="true">
-                <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
-                <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
-              </svg>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class="live-side-info">
-        <div class="upcoming-card">
-          <span class="badge-featured" style="margin-bottom: 12px; display: inline-block;">${liveData.upcoming.badge}</span>
-          <h3>${this.escapeHtml(liveData.upcoming.title)}</h3>
-          <p>Get notified when the next grand multi-stream kicks off with PS5 and PC gaming sessions!</p>
-          <a 
-            href="https://www.youtube.com/watch?v=${liveData.upcoming.videoId}" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            class="btn btn-secondary btn-sm"
-          >
-            <span>Set Reminder on YouTube</span>
-          </a>
-        </div>
-
-        <div class="upcoming-card" style="background: rgba(17, 21, 37, 0.5);">
-          <h3 style="font-size: 1.05rem;">Live Schedule &amp; Setup</h3>
-          <p style="font-size: 0.88rem; line-height: 1.6;">
-            Streams usually feature <strong>PS5 gaming</strong>, <strong>Ghost of Tsushima</strong>, <strong>GTA V/VI</strong>, and <strong>BGMI squads</strong>. Join the live chat to engage in real-time Malayalam gaming banter!
-          </p>
-        </div>
-      </div>
-    `;
-
-    // Modal listeners for stream
-    const triggerThumb = document.getElementById('live-thumb-trigger');
-    const triggerBtn = document.getElementById('live-play-btn');
-
-    const handlePlay = (trigger) => {
-      this.videoModal?.open(liveData.videoId, liveData.liveTitle, trigger);
-    };
-
-    triggerThumb?.addEventListener('click', () => handlePlay(triggerThumb));
-    triggerThumb?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        handlePlay(triggerThumb);
-      }
-    });
-    triggerBtn?.addEventListener('click', () => handlePlay(triggerBtn));
+    this.liveSection = new LiveSection(this.videoModal);
   }
 
   /* ---------------------------------------------------------

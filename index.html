@@ -863,7 +863,7 @@
   <script type="module" src="./src/main.js"></script>
 
   <!-- Three.js Modern 3D Background Animation (Gaming / Tech Theme) -->
-  <canvas id="bg-three-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;"></canvas>
+  <canvas id="bg-three-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; opacity: 0.9;"></canvas>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
     (function () {
@@ -1080,7 +1080,7 @@
 
       function animate() {
         requestAnimationFrame(animate);
-        if (!isVisible) return;
+        if (!isVisible || window.__is3DMotionPaused) return;
 
         var time = clock.getElapsedTime();
         var motionFactor = prefersReducedMotion ? 0.2 : 1.0;

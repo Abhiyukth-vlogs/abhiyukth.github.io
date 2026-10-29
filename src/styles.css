@@ -68,6 +68,23 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Ambient 3D Cybernetic Background Canvas */
+#bg-three-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+#main-content {
+  position: relative;
+  z-index: 1;
+}
+
 /* Accessibility: Skip Link (only visible on keyboard tab focus) */
 .skip-link {
   position: absolute;

@@ -18,7 +18,7 @@ subgraph group_content["Channel Content"]
   node_featured["Featured Video<br/>[main.js]"]
   node_shorts["YouTube Shorts Feed<br/>[shortsSection.js]"]
   node_catalog["Video Catalog<br/>[main.js]"]
-  node_live["Live Replays<br/>[main.js]"]
+  node_live["Live Stream Card<br/>[liveSection.js]"]
   node_playlists["Playlist Showcase<br/>[main.js]"]
   node_profile["Channel Profile<br/>[main.js]"]
   node_social["Social Links<br/>[channel.js]"]
@@ -33,9 +33,9 @@ end
 
 subgraph group_stats["Backend & Serverless API"]
   node_express["Express Backend Server<br/>[server.js]"]
-  node_vercel["Vercel Serverless Functions<br/>[api/shorts.js, api/subscribers.js]"]
-  node_shorts_svc["Shorts Discovery Engine<br/>[api/_lib/youtubeShorts.js]"]
-  node_youtube_api["YouTube Data API v3 & Analytics"]
+  node_vercel["Vercel Serverless Functions<br/>[api/live.js, api/shorts.js, api/subscribers.js]"]
+  node_shorts_svc["Shorts & Live Discovery Engines<br/>[api/_lib/youtubeLive.js, youtubeShorts.js]"]
+  node_youtube_api["YouTube Data API v3 & Live Streaming"]
 end
 
 node_visitor(("Visitor"))
@@ -45,18 +45,20 @@ node_app -->|"reads content"| node_channel
 node_app -->|"renders"| node_featured
 node_app -->|"renders 9:16 feed"| node_shorts
 node_app -->|"renders and filters"| node_catalog
-node_app -->|"renders"| node_live
+node_app -->|"renders live card"| node_live
 node_app -->|"renders"| node_playlists
 node_app -->|"renders"| node_profile
 node_app -->|"uses links"| node_social
+node_live -->|"fetches live / replay"| node_express
+node_live -->|"fetches live / replay"| node_vercel
 node_shorts -->|"fetches live / cached"| node_express
 node_shorts -->|"fetches live / cached"| node_vercel
 node_app -->|"opens 16:9 & 9:16 modal"| node_modal
 node_modal -->|"embeds on demand"| node_youtube
 node_app -->|"loads dynamically"| node_hero
 node_app -->|"updates"| node_odometer
-node_express -->|"discovers shorts"| node_shorts_svc
-node_vercel -->|"discovers shorts"| node_shorts_svc
+node_express -->|"discovers streams"| node_shorts_svc
+node_vercel -->|"discovers streams"| node_shorts_svc
 node_shorts_svc -->|"discovers & verifies"| node_youtube_api
 node_express -->|"fetches statistics"| node_youtube_api
 node_vercel -->|"fetches statistics"| node_youtube_api
@@ -271,17 +273,28 @@ In `src/data/channel.js`, add items to `playlists`:
 }
 ```
 
-### How to Update Live Stream Status
-In `src/data/channel.js`, toggle `liveStatus`:
-```javascript
-liveStatus: {
-  isLive: true, // Set to true when broadcast is confirmed active
-  badgeText: 'LIVE BROADCASTING',
-  liveTitle: 'PS5 Live Stream Title',
-  videoId: 'ACTIVE_VIDEO_ID',
-  category: 'Gaming / PS5'
-}
-```
+### Dynamic Live Stream Auto-Updating
+The Live Stream card automatically detects active YouTube broadcasts without manual code changes or redeployments:
+
+- **Active Live Broadcast**: When you start a public livestream on `@abhiyukthvlogs`, the card automatically switches to that stream, applies the pulsing **LIVE NOW** badge, displays the exact YouTube title (including Malayalam text), updates the thumbnail, and sets the **Watch Live Now** modal/player destination.
+- **Completed Stream Replay**: When the broadcast ends, the card automatically transitions to **Latest Live Replay**, showing the latest available completed public livestream.
+- **Multiple Active Broadcasts**: If multiple streams are active, the system automatically selects the most recently started one.
+- **Scheduled Streams**: Upcoming broadcasts are kept as reminders and never shown as active before they actually start.
+- **Flicker-Free Periodic Sync**: The card refreshes in-place every 90 seconds while visible and immediately when returning to the tab.
+- **API Endpoint**: Served by `/api/youtube/live` (and `/api/live`), featuring server-side request deduplication, a 90-second cache for live status, and a 10-minute cache for replays.
+
+#### Quota & Owner Authorization Setup
+1. **Public API Key Fallback**:
+   Uses YouTube Data API v3 (`search.list` with `eventType=live`). Because `search.list` costs 100 quota units, shared server-side caching (90s TTL) and in-flight request deduplication are applied so multiple visitors share a single request.
+2. **Owner-Authorized Discovery (Recommended - 1 Quota Unit)**:
+   Uses `liveBroadcasts.list` (broadcastStatus=active, broadcastType=all), which costs only **1 quota unit** (vs 100).
+   To enable owner authorization:
+   1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials), create an **OAuth 2.0 Client ID** (Web Application).
+   2. Set Authorized Redirect URI: `http://localhost:5000/api/auth/youtube/callback` (or your domain's callback).
+   3. Add `YOUTUBE_CLIENT_ID` and `YOUTUBE_CLIENT_SECRET` to your `.env` file.
+   4. Start the server (`npm run server`) and visit `http://localhost:5000/api/auth/youtube`.
+   5. Grant read-only YouTube permission (`youtube.readonly`).
+   6. Copy the generated `YOUTUBE_REFRESH_TOKEN` into your `.env` file.
 
 ### How to Adjust Color Palette & Theme Tokens
 Open [`src/styles.css`](file:///e:/abhiyukth.github.io/src/styles.css) and customize `:root`:

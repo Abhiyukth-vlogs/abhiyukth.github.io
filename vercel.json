@@ -4,6 +4,7 @@
   "outputDirectory": "dist",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/youtube/shorts", "destination": "/api/shorts" }
+    { "source": "/api/youtube/shorts", "destination": "/api/shorts" },
+    { "source": "/api/youtube/live", "destination": "/api/live" }
   ]
 }

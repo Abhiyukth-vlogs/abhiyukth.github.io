@@ -5,6 +5,7 @@ import axios from 'axios';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getShortsFeed } from './api/_lib/youtubeShorts.js';
+import { getLiveStreamData } from './api/_lib/youtubeLive.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -167,6 +168,29 @@ app.get('/api/youtube/shorts', shortsHandler);
 app.get('/api/shorts', shortsHandler);
 
 /**
+ * GET /api/youtube/live & GET /api/live
+ * Returns dynamically discovered, verified active YouTube livestream or latest replay
+ */
+const liveHandler = async (req, res) => {
+  try {
+    const liveData = await getLiveStreamData();
+    res.setHeader('Cache-Control', 'public, max-age=90, stale-while-revalidate=180');
+    return res.json(liveData);
+  } catch (error) {
+    return res.status(200).json({
+      success: false,
+      error: error.message,
+      isLive: false,
+      status: 'error_fallback',
+      badgeText: 'Latest Live Replay'
+    });
+  }
+};
+
+app.get('/api/youtube/live', liveHandler);
+app.get('/api/live', liveHandler);
+
+/**
  * GET /api/auth/status
  * Reports YouTube API and owner OAuth connection status
  */
@@ -289,6 +313,7 @@ app.listen(PORT, () => {
   console.log(`🚀 YouTube Backend Server running on http://localhost:${PORT}`);
   console.log(`📡 Subscribers Endpoint: http://localhost:${PORT}/api/subscribers`);
   console.log(`🎬 Shorts Endpoint:      http://localhost:${PORT}/api/youtube/shorts`);
+  console.log(`🔴 Live Stream Endpoint: http://localhost:${PORT}/api/youtube/live`);
   console.log(`🔒 YouTube API Key:      ${API_KEY ? 'Configured & Secured' : 'NOT SET in .env'}`);
   console.log(`=============================================`);
 });

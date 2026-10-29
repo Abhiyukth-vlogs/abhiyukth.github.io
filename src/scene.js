@@ -88,8 +88,8 @@ export class HeroScene {
   setupScene() {
     this.scene = new THREE.Scene();
 
-    const width = this.container.clientWidth || 600;
-    const height = this.container.clientHeight || 500;
+    const width = Math.max(this.container.clientWidth || 0, 320);
+    const height = Math.max(this.container.clientHeight || 0, 350);
 
     this.camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
     this.camera.position.set(0, 0, 8.5);
@@ -101,10 +101,10 @@ export class HeroScene {
     });
 
     const isMobile = window.innerWidth < 768;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
     this.renderer.setSize(width, height);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.1;
+    this.renderer.toneMappingExposure = 1.15;
 
     this.container.appendChild(this.renderer.domElement);
     this.renderer.domElement.setAttribute('aria-hidden', 'true');
@@ -517,39 +517,42 @@ export class HeroScene {
   }
 
   setupEvents() {
-    // Resize handler
+    // Resize handler with safe minimum bounds
     this.handleResize = () => {
       if (!this.container || !this.renderer || !this.camera) return;
-      const width = this.container.clientWidth;
-      const height = this.container.clientHeight;
-      if (width === 0 || height === 0) return;
+      const width = Math.max(this.container.clientWidth || 0, 300);
+      const height = Math.max(this.container.clientHeight || 0, 320);
 
       this.camera.aspect = width / height;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(width, height);
     };
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener('resize', this.handleResize, { passive: true });
 
-    // Pointer move for gentle parallax (only on non-touch or large devices)
+    // Pointer move for responsive parallax tilt
     this.handlePointerMove = (e) => {
-      if (this.prefersReducedMotion || this.isPaused) return;
-      const rect = this.container.getBoundingClientRect();
-      const normX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const normY = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+      if (this.isPaused) return;
+      const normX = (e.clientX / window.innerWidth - 0.5) * 2;
+      const normY = (e.clientY / window.innerHeight - 0.5) * 2;
 
-      // Clamp target
       this.pointer.targetX = Math.max(-1, Math.min(1, normX));
       this.pointer.targetY = Math.max(-1, Math.min(1, normY));
     };
-    window.addEventListener('pointermove', this.handlePointerMove);
+    window.addEventListener('pointermove', this.handlePointerMove, { passive: true });
 
-    // Drag-to-rotate within the canvas
-    // NOTE: Does NOT capture touch events with preventDefault so page scroll remains completely unobstructed!
+    // Drag-to-rotate within the 3D canvas viewport
     this.handlePointerDown = (e) => {
-      if (e.button !== 0) return; // Left click only
+      if (e.button !== undefined && e.button !== 0) return; // Left click or touch primary
       this.drag.isDragging = true;
       this.drag.startX = e.clientX;
       this.drag.startY = e.clientY;
+      this.container.style.cursor = 'grabbing';
+
+      if (e.pointerId && this.container.setPointerCapture) {
+        try {
+          this.container.setPointerCapture(e.pointerId);
+        } catch {}
+      }
     };
 
     this.handleDragMove = (e) => {
@@ -559,19 +562,28 @@ export class HeroScene {
       this.drag.startX = e.clientX;
       this.drag.startY = e.clientY;
 
-      this.drag.targetRotY += deltaX * 0.006;
-      this.drag.targetRotX += deltaY * 0.006;
-      // Clamp X rotation so it doesn't flip upside down
-      this.drag.targetRotX = Math.max(-0.6, Math.min(0.6, this.drag.targetRotX));
+      this.drag.targetRotY += deltaX * 0.0075;
+      this.drag.targetRotX += deltaY * 0.0075;
+      // Clamp vertical rotation so objects don't flip upside down
+      this.drag.targetRotX = Math.max(-0.75, Math.min(0.75, this.drag.targetRotX));
     };
 
-    this.handlePointerUp = () => {
-      this.drag.isDragging = false;
+    this.handlePointerUp = (e) => {
+      if (this.drag.isDragging) {
+        this.drag.isDragging = false;
+        this.container.style.cursor = 'grab';
+        if (e && e.pointerId && this.container.releasePointerCapture) {
+          try {
+            this.container.releasePointerCapture(e.pointerId);
+          } catch {}
+        }
+      }
     };
 
     this.container.addEventListener('pointerdown', this.handlePointerDown);
     window.addEventListener('pointermove', this.handleDragMove);
     window.addEventListener('pointerup', this.handlePointerUp);
+    window.addEventListener('pointercancel', this.handlePointerUp);
 
     // Pause rendering when tab is hidden
     this.handleVisibilityChange = () => {
@@ -604,6 +616,7 @@ export class HeroScene {
 
   togglePause() {
     this.isPaused = !this.isPaused;
+    window.__is3DMotionPaused = this.isPaused;
     return this.isPaused;
   }
 
@@ -625,70 +638,105 @@ export class HeroScene {
     this.drag.rotX += (this.drag.targetRotX - this.drag.rotX) * 0.08;
     this.drag.rotY += (this.drag.targetRotY - this.drag.rotY) * 0.08;
 
-    // Slowly return drag rotation to center when not dragging
+    // Gradual decay back toward baseline with gentle inertia
     if (!this.drag.isDragging) {
-      this.drag.targetRotX *= 0.985;
+      this.drag.targetRotX *= 0.97;
       this.drag.targetRotY *= 0.985;
     }
 
-    // Apply parallax & drag to interactive group
-    if (!this.prefersReducedMotion && !this.isPaused) {
-      this.interactiveGroup.rotation.y = this.drag.rotY + (this.pointer.x * 0.22);
-      this.interactiveGroup.rotation.x = this.drag.rotX - (this.pointer.y * 0.18);
-    } else {
-      this.interactiveGroup.rotation.set(0, 0, 0);
-    }
+    // Apply parallax & drag to interactive group with subtle idle auto-orbit
+    const motionSpeed = this.isPaused ? 0 : (this.prefersReducedMotion ? 0.25 : 1.0);
+    const autoOrbit = Math.sin(elapsedTime * 0.45) * 0.06 * motionSpeed;
 
-    // 3. Mode Transitions (Smooth lerp towards target transforms)
+    this.interactiveGroup.rotation.y = this.drag.rotY + (this.pointer.x * 0.22 * (motionSpeed ? 1 : 0)) + autoOrbit;
+    this.interactiveGroup.rotation.x = this.drag.rotX - (this.pointer.y * 0.16 * (motionSpeed ? 1 : 0));
+
+    // 3. Mode Transitions & Lifelike Floating Hover
     const target = this.modeTargets[this.currentMode];
-    const lerpSpeed = 0.06;
+    const lerpSpeed = 0.055;
 
     if (this.controllerGroup && target.controller) {
       this.controllerGroup.position.lerp(target.controller.pos, lerpSpeed);
-      this.controllerGroup.scale.lerp(new THREE.Vector3(target.controller.scale, target.controller.scale, target.controller.scale), lerpSpeed);
-      
-      // Floating bobbing motion
-      if (!this.prefersReducedMotion && !this.isPaused) {
-        const floatOffset = Math.sin(elapsedTime * 1.5) * 0.08;
-        this.controllerGroup.position.y += floatOffset * 0.03;
-        this.controllerGroup.rotation.y += Math.cos(elapsedTime * 0.8) * 0.002;
+      const cScale = target.controller.scale;
+      this.controllerGroup.scale.lerp(new THREE.Vector3(cScale, cScale, cScale), lerpSpeed);
+
+      // Smooth rotation transition to target mode
+      this.controllerGroup.rotation.x = THREE.MathUtils.lerp(this.controllerGroup.rotation.x, target.controller.rot.x, lerpSpeed);
+      this.controllerGroup.rotation.y = THREE.MathUtils.lerp(this.controllerGroup.rotation.y, target.controller.rot.y, lerpSpeed);
+      this.controllerGroup.rotation.z = THREE.MathUtils.lerp(this.controllerGroup.rotation.z, target.controller.rot.z, lerpSpeed);
+
+      // Organic zero-gravity floating bobbing motion
+      if (motionSpeed > 0) {
+        const floatY = Math.sin(elapsedTime * 1.6) * 0.12 * motionSpeed;
+        const floatRotY = Math.cos(elapsedTime * 0.9) * 0.04 * motionSpeed;
+        const floatRotX = Math.sin(elapsedTime * 1.1) * 0.02 * motionSpeed;
+
+        this.controllerGroup.position.y += floatY * 0.04;
+        this.controllerGroup.rotation.y += floatRotY * 0.02;
+        this.controllerGroup.rotation.x += floatRotX * 0.02;
       }
     }
 
     if (this.cameraGroup && target.camera) {
       this.cameraGroup.position.lerp(target.camera.pos, lerpSpeed);
-      this.cameraGroup.scale.lerp(new THREE.Vector3(target.camera.scale, target.camera.scale, target.camera.scale), lerpSpeed);
+      const camScale = target.camera.scale;
+      this.cameraGroup.scale.lerp(new THREE.Vector3(camScale, camScale, camScale), lerpSpeed);
 
-      if (!this.prefersReducedMotion && !this.isPaused) {
-        const floatOffset = Math.cos(elapsedTime * 1.3) * 0.08;
-        this.cameraGroup.position.y += floatOffset * 0.03;
-        this.cameraGroup.rotation.y += Math.sin(elapsedTime * 0.7) * 0.002;
+      this.cameraGroup.rotation.x = THREE.MathUtils.lerp(this.cameraGroup.rotation.x, target.camera.rot.x, lerpSpeed);
+      this.cameraGroup.rotation.y = THREE.MathUtils.lerp(this.cameraGroup.rotation.y, target.camera.rot.y, lerpSpeed);
+      this.cameraGroup.rotation.z = THREE.MathUtils.lerp(this.cameraGroup.rotation.z, target.camera.rot.z, lerpSpeed);
+
+      if (motionSpeed > 0) {
+        const floatY = Math.cos(elapsedTime * 1.4) * 0.10 * motionSpeed;
+        const floatRotY = Math.sin(elapsedTime * 0.8) * 0.04 * motionSpeed;
+
+        this.cameraGroup.position.y += floatY * 0.04;
+        this.cameraGroup.rotation.y += floatRotY * 0.02;
       }
     }
 
     if (this.playIconGroup && target.playIcon) {
       this.playIconGroup.position.lerp(target.playIcon.pos, lerpSpeed);
-      this.playIconGroup.scale.lerp(new THREE.Vector3(target.playIcon.scale, target.playIcon.scale, target.playIcon.scale), lerpSpeed);
+      const pScale = target.playIcon.scale;
+      this.playIconGroup.scale.lerp(new THREE.Vector3(pScale, pScale, pScale), lerpSpeed);
 
-      if (!this.prefersReducedMotion && !this.isPaused) {
-        this.playIconGroup.rotation.y += 0.015;
+      if (motionSpeed > 0) {
+        this.playIconGroup.rotation.y += 0.018 * motionSpeed;
+        this.playIconGroup.position.y += Math.sin(elapsedTime * 2.2) * 0.003 * motionSpeed;
       }
     }
 
-    // 4. Accent light color transition
+    // 4. Accent dynamic neon lighting & glowing pulses
     if (this.accentPointLight) {
-      this.accentPointLight.color.lerp(target.lightColor, 0.05);
+      this.accentPointLight.color.lerp(target.lightColor, 0.06);
+      if (motionSpeed > 0) {
+        const pulse = 1.0 + Math.sin(elapsedTime * 2.6) * 0.2;
+        this.accentPointLight.intensity = 3.5 * pulse;
+      }
     }
     if (this.lightbar) {
-      this.lightbar.material.color.lerp(target.lightColor, 0.05);
-      this.lightbar.material.emissive.lerp(target.lightColor, 0.05);
+      this.lightbar.material.color.lerp(target.lightColor, 0.06);
+      this.lightbar.material.emissive.lerp(target.lightColor, 0.06);
+      if (motionSpeed > 0) {
+        const pulse = 1.0 + Math.sin(elapsedTime * 2.6) * 0.25;
+        this.lightbar.material.emissiveIntensity = 1.8 * pulse;
+      }
     }
 
-    // 5. Orbital rings & particle slow drift
-    if (!this.prefersReducedMotion && !this.isPaused) {
-      if (this.orbitRing1) this.orbitRing1.rotation.z += 0.003;
-      if (this.orbitRing2) this.orbitRing2.rotation.z -= 0.0025;
-      if (this.particles) this.particles.rotation.y += 0.001;
+    // 5. Orbital rings & cosmic cyber particle drift
+    if (motionSpeed > 0) {
+      if (this.orbitRing1) {
+        this.orbitRing1.rotation.z += 0.005 * motionSpeed;
+        this.orbitRing1.rotation.x += 0.0025 * motionSpeed;
+      }
+      if (this.orbitRing2) {
+        this.orbitRing2.rotation.z -= 0.004 * motionSpeed;
+        this.orbitRing2.rotation.y += 0.003 * motionSpeed;
+      }
+      if (this.particles) {
+        this.particles.rotation.y += 0.0014 * motionSpeed;
+        this.particles.rotation.x = Math.sin(elapsedTime * 0.5) * 0.03 * motionSpeed;
+      }
     }
 
     this.renderer.render(this.scene, this.camera);

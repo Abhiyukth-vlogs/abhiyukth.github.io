@@ -32,12 +32,15 @@ export default async function handler(req, res) {
         'https://www.googleapis.com/auth/yt-analytics.readonly'
       ] : [],
       analyticsAccess: isOAuthConnected,
-      fileMetadataAccess: isOAuthConnected
+      fileMetadataAccess: isOAuthConnected,
+      liveStreamingAccess: isOAuthConnected
     },
     syncCapabilities: {
       autoDiscovery: true,
       accurateClassification: isOAuthConnected ? 'authenticated_file_and_analytics' : 'public_route_and_duration_verification',
-      refreshIntervalMinutes: 5
+      liveStreamDiscovery: isOAuthConnected ? 'owner_authorized_liveBroadcasts (1 quota unit)' : 'public_search_fallback (100 quota units)',
+      liveRefreshIntervalSeconds: 90,
+      shortsRefreshIntervalMinutes: 5
     }
   });
 }

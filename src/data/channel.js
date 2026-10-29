@@ -61,14 +61,14 @@ export const channelConfig = {
   },
 
   // Live Stream Status
-  // isLive is false unless a verified broadcast is currently active.
+  // Dynamically synchronized via /api/youtube/live with automatic live detection & replay fallback
   liveStatus: {
     isLive: false,
-    badgeText: 'Latest Verified Stream',
-    liveTitle: 'IRL Ghost Of Tsushima Director\'s Cut: Live Ps5 l Malayalam Live',
-    videoId: 'Kw2kIt6dyU4',
+    badgeText: 'Latest Live Replay',
+    liveTitle: '🔴 Ghost of Tsushima Director’s Cut PS5 LIVE | Part 37 | Malayalam Gameplay | Abhiyukth Vlogs',
+    videoId: 'KPhHbQf4JLs',
     category: 'Gaming / PS5',
-    note: 'Active broadcasts are confirmed via YouTube Live. Catch past stream replays or join the next live stream!',
+    note: 'Completed live broadcast replay. Catch past stream replays or join the next live stream!',
     upcoming: {
       title: "MALAYALAM'S FIRST EVER GTA 6 MULTI-STREAM! 🎮🔥 മലയാളത്തിലെ ആദ്യത്തെ ലൈവ്!",
       videoId: '8aeunJTnGDM',
