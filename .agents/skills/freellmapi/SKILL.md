@@ -155,3 +155,4 @@ Add to your client's MCP settings:
 - **Usage & Quota Tracker**: Tracks per-key token counts and requests per minute (RPM) to prevent exceeding free-tier caps.
 - **Prompt Compression Pipeline**: Compresses conversational context by up to 40% before dispatching to upstream providers, saving free-tier tokens.
 - **Encrypted Storage**: Provider API keys are stored encrypted at rest in local SQLite (`freeapi.db`) using AES-256-GCM.
+
