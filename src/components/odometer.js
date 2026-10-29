@@ -113,7 +113,9 @@ export class Odometer {
           ribbon.style.transform = `translateY(0%)`;
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-              ribbon.style.transition = `transform ${this.options.duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${staggerDelay}ms`;
+              ribbon.style.transition =
+                `transform ${this.options.duration}ms ` +
+                `cubic-bezier(0.16, 1, 0.3, 1) ${staggerDelay}ms`;
               ribbon.style.transform = `translateY(-${targetDigit * 10}%)`;
             });
           });
@@ -149,7 +151,9 @@ export class Odometer {
 
           if (animate && prevDigit !== targetDigit) {
             child.classList.add('rolling');
-            ribbon.style.transition = `transform ${this.options.duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${staggerDelay}ms`;
+            ribbon.style.transition =
+              `transform ${this.options.duration}ms ` +
+              `cubic-bezier(0.16, 1, 0.3, 1) ${staggerDelay}ms`;
             setTimeout(() => {
               child.classList.remove('rolling');
             }, this.options.duration + staggerDelay);
