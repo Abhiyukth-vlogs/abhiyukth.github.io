@@ -235,6 +235,35 @@ class App {
       this.renderVideoCatalog();
     });
 
+    // Keyboard Shortcuts for Search (`/` to focus, `Escape` to clear/blur)
+    document.addEventListener('keydown', (e) => {
+      if (
+        e.key === '/' &&
+        !e.ctrlKey &&
+        !e.metaKey &&
+        !e.altKey &&
+        !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName) &&
+        !document.activeElement?.isContentEditable
+      ) {
+        e.preventDefault();
+        searchInput?.focus();
+        searchInput?.select();
+      }
+    });
+
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (searchInput.value) {
+          searchInput.value = '';
+          this.searchQuery = '';
+          if (clearBtn) clearBtn.style.display = 'none';
+          this.renderVideoCatalog();
+        } else {
+          searchInput.blur();
+        }
+      }
+    });
+
     // Clear Search Button
     clearBtn?.addEventListener('click', () => {
       if (searchInput) searchInput.value = '';

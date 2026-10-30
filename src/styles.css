@@ -1100,6 +1100,29 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 0 12px var(--accent-cyan-glow);
 }
 
+.search-kbd-hint {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--surface-glass-border);
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.search-wrap:focus-within .search-kbd-hint,
+.search-input:not(:placeholder-shown) ~ .search-kbd-hint {
+  opacity: 0;
+  visibility: hidden;
+}
+
 .search-clear-btn {
   position: absolute;
   right: 12px;
