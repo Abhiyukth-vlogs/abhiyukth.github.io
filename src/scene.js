@@ -30,18 +30,22 @@ export class HeroScene {
       targetRotY: 0
     };
 
-    // Animation targets for mode transitions
+    // Bind animate loop once to avoid allocating a function closure on every frame
+    this.animate = this.animate.bind(this);
+
+    // Animation targets for mode transitions with pre-allocated scale vectors
+    // Performance optimization: Pre-allocating Vector3 scaleVec prevents garbage creation during per-frame lerps
     this.modeTargets = {
       gaming: {
-        controller: { pos: new THREE.Vector3(0, 0, 0), rot: new THREE.Vector3(0.1, -0.2, 0.05), scale: 1.15 },
-        camera: { pos: new THREE.Vector3(2.4, -1.3, -1.8), rot: new THREE.Vector3(-0.2, -0.6, 0.1), scale: 0.65 },
-        playIcon: { pos: new THREE.Vector3(-1.8, 1.5, -0.8), rot: new THREE.Vector3(0, 0.4, 0), scale: 0.8 },
+        controller: { pos: new THREE.Vector3(0, 0, 0), rot: new THREE.Vector3(0.1, -0.2, 0.05), scale: 1.15, scaleVec: new THREE.Vector3(1.15, 1.15, 1.15) },
+        camera: { pos: new THREE.Vector3(2.4, -1.3, -1.8), rot: new THREE.Vector3(-0.2, -0.6, 0.1), scale: 0.65, scaleVec: new THREE.Vector3(0.65, 0.65, 0.65) },
+        playIcon: { pos: new THREE.Vector3(-1.8, 1.5, -0.8), rot: new THREE.Vector3(0, 0.4, 0), scale: 0.8, scaleVec: new THREE.Vector3(0.8, 0.8, 0.8) },
         lightColor: new THREE.Color(0x8B5CF6)
       },
       vlogs: {
-        controller: { pos: new THREE.Vector3(-2.4, -1.3, -1.8), rot: new THREE.Vector3(0.2, 0.6, -0.1), scale: 0.65 },
-        camera: { pos: new THREE.Vector3(0, 0, 0), rot: new THREE.Vector3(0.05, 0.25, 0), scale: 1.2 },
-        playIcon: { pos: new THREE.Vector3(1.8, 1.5, -0.8), rot: new THREE.Vector3(0, -0.4, 0), scale: 0.8 },
+        controller: { pos: new THREE.Vector3(-2.4, -1.3, -1.8), rot: new THREE.Vector3(0.2, 0.6, -0.1), scale: 0.65, scaleVec: new THREE.Vector3(0.65, 0.65, 0.65) },
+        camera: { pos: new THREE.Vector3(0, 0, 0), rot: new THREE.Vector3(0.05, 0.25, 0), scale: 1.2, scaleVec: new THREE.Vector3(1.2, 1.2, 1.2) },
+        playIcon: { pos: new THREE.Vector3(1.8, 1.5, -0.8), rot: new THREE.Vector3(0, -0.4, 0), scale: 0.8, scaleVec: new THREE.Vector3(0.8, 0.8, 0.8) },
         lightColor: new THREE.Color(0x22D3EE)
       }
     };
@@ -621,7 +625,7 @@ export class HeroScene {
   }
 
   animate() {
-    this.rafId = requestAnimationFrame(() => this.animate());
+    this.rafId = requestAnimationFrame(this.animate);
 
     if (!this.isVisible || !this.renderer || !this.scene || !this.camera) {
       return;
@@ -657,8 +661,8 @@ export class HeroScene {
 
     if (this.controllerGroup && target.controller) {
       this.controllerGroup.position.lerp(target.controller.pos, lerpSpeed);
-      const cScale = target.controller.scale;
-      this.controllerGroup.scale.lerp(new THREE.Vector3(cScale, cScale, cScale), lerpSpeed);
+      // Performance optimization: lerp to pre-allocated scaleVec to avoid per-frame Vector3 allocations
+      this.controllerGroup.scale.lerp(target.controller.scaleVec, lerpSpeed);
 
       // Smooth rotation transition to target mode
       this.controllerGroup.rotation.x = THREE.MathUtils.lerp(this.controllerGroup.rotation.x, target.controller.rot.x, lerpSpeed);
@@ -679,8 +683,8 @@ export class HeroScene {
 
     if (this.cameraGroup && target.camera) {
       this.cameraGroup.position.lerp(target.camera.pos, lerpSpeed);
-      const camScale = target.camera.scale;
-      this.cameraGroup.scale.lerp(new THREE.Vector3(camScale, camScale, camScale), lerpSpeed);
+      // Performance optimization: lerp to pre-allocated scaleVec
+      this.cameraGroup.scale.lerp(target.camera.scaleVec, lerpSpeed);
 
       this.cameraGroup.rotation.x = THREE.MathUtils.lerp(this.cameraGroup.rotation.x, target.camera.rot.x, lerpSpeed);
       this.cameraGroup.rotation.y = THREE.MathUtils.lerp(this.cameraGroup.rotation.y, target.camera.rot.y, lerpSpeed);
@@ -697,8 +701,8 @@ export class HeroScene {
 
     if (this.playIconGroup && target.playIcon) {
       this.playIconGroup.position.lerp(target.playIcon.pos, lerpSpeed);
-      const pScale = target.playIcon.scale;
-      this.playIconGroup.scale.lerp(new THREE.Vector3(pScale, pScale, pScale), lerpSpeed);
+      // Performance optimization: lerp to pre-allocated scaleVec
+      this.playIconGroup.scale.lerp(target.playIcon.scaleVec, lerpSpeed);
 
       if (motionSpeed > 0) {
         this.playIconGroup.rotation.y += 0.018 * motionSpeed;
