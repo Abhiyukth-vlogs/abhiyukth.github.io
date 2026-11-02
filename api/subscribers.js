@@ -1,5 +1,22 @@
 import axios from 'axios';
 
+// In-memory cache (60 seconds TTL) to prevent repeated YouTube API calls across warm serverless requests
+let cache = {
+  timestamp: 0,
+  data: null
+};
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
+/**
+ * Resets the in-memory cache (primarily used for unit testing)
+ */
+export function _resetSubscribersCache() {
+  cache = {
+    timestamp: 0,
+    data: null
+  };
+}
+
 // Vercel Serverless Function Handler
 export default async function handler(req, res) {
   // Enable CORS
@@ -11,6 +28,18 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+
+  const now = Date.now();
+
+  // Performance Optimization: Return cached response if within TTL
+  // Prevents redundant YouTube Data API quota consumption and drops latency from ~300ms to <1ms
+  if (cache.data && (now - cache.timestamp < CACHE_TTL_MS)) {
+    return res.status(200).json({
+      success: true,
+      cached: true,
+      ...cache.data
+    });
   }
 
   const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || 'UCuG7-r1F3b2RzGoRFIe0MnQ';
@@ -52,8 +81,7 @@ export default async function handler(req, res) {
     const rawViews = Number(stats.viewCount) || 0;
     const rawVideos = Number(stats.videoCount) || 0;
 
-    return res.status(200).json({
-      success: true,
+    const formattedData = {
       channelId: CHANNEL_ID,
       channelTitle: channel.snippet?.title || 'Abhiyukth Vlogs',
       subscriberCount: rawSubscribers,
@@ -63,9 +91,31 @@ export default async function handler(req, res) {
       videoCount: rawVideos,
       videoCountFormatted: rawVideos.toLocaleString('en-US'),
       lastUpdated: new Date().toISOString()
+    };
+
+    // Update in-memory cache
+    cache = {
+      timestamp: now,
+      data: formattedData
+    };
+
+    return res.status(200).json({
+      success: true,
+      cached: false,
+      ...formattedData
     });
   } catch (error) {
     const errorMsg = error.response?.data?.error?.message || error.message;
+
+    // Resilience: If valid stale data exists in cache, return it rather than hardcoded error fallback
+    if (cache.data) {
+      return res.status(200).json({
+        success: true,
+        stale: true,
+        ...cache.data
+      });
+    }
+
     return res.status(200).json({
       success: false,
       error: errorMsg,
