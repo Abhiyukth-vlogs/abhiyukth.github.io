@@ -226,17 +226,41 @@ class App {
       });
     });
 
-    // Real-time Search Input
-    searchInput?.addEventListener('input', (e) => {
-      this.searchQuery = e.target.value.trim().toLowerCase();
-      if (clearBtn) {
-        clearBtn.style.display = this.searchQuery ? 'block' : 'none';
+    // Real-time Search Input with Debounce (⚡ Bolt Optimization)
+    // Avoid full DOM teardown, re-parsing, and event listener re-binding on every single keystroke.
+    let debounceTimer = null;
+    const executeSearch = (immediate = false) => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      const run = () => {
+        this.searchQuery = searchInput?.value.trim().toLowerCase() || '';
+        this.renderVideoCatalog();
+      };
+      if (immediate) {
+        run();
+      } else {
+        debounceTimer = setTimeout(run, 150);
       }
-      this.renderVideoCatalog();
+    };
+
+    searchInput?.addEventListener('input', (e) => {
+      const hasValue = !!e.target.value.trim();
+      if (clearBtn) {
+        clearBtn.style.display = hasValue ? 'block' : 'none';
+      }
+      executeSearch(false);
+    });
+
+    // Execute immediately if user presses Enter
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executeSearch(true);
+      }
     });
 
     // Clear Search Button
     clearBtn?.addEventListener('click', () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
       if (searchInput) searchInput.value = '';
       this.searchQuery = '';
       clearBtn.style.display = 'none';
