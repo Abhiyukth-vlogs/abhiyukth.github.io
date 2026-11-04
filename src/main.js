@@ -226,17 +226,33 @@ class App {
       });
     });
 
-    // Real-time Search Input
+    // Debounce search input to avoid DOM rebuilding & reflow on every keystroke
+    let searchDebounceTimer = null;
+
+    // Real-time Search Input with Debouncing
     searchInput?.addEventListener('input', (e) => {
       this.searchQuery = e.target.value.trim().toLowerCase();
       if (clearBtn) {
         clearBtn.style.display = this.searchQuery ? 'block' : 'none';
       }
-      this.renderVideoCatalog();
+
+      // If search query is cleared, re-render immediately for snappy UX;
+      // otherwise debounce DOM updates by 150ms to prevent main thread lag
+      if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+      }
+      if (!this.searchQuery) {
+        this.renderVideoCatalog();
+      } else {
+        searchDebounceTimer = setTimeout(() => {
+          this.renderVideoCatalog();
+        }, 150);
+      }
     });
 
     // Clear Search Button
     clearBtn?.addEventListener('click', () => {
+      if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
       if (searchInput) searchInput.value = '';
       this.searchQuery = '';
       clearBtn.style.display = 'none';
@@ -246,6 +262,7 @@ class App {
 
     // Reset Filters Button in Empty State
     resetBtn?.addEventListener('click', () => {
+      if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
       this.activeCategory = 'All';
       this.searchQuery = '';
       if (searchInput) searchInput.value = '';
