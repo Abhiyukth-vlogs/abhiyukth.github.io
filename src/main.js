@@ -415,12 +415,21 @@ class App {
     const mobileLinks = document.querySelectorAll('.mobile-nav-link');
     const navLinks = document.querySelectorAll('.nav-link');
 
-    // Sticky header shadow on scroll
+    // Sticky header shadow on scroll: throttled with requestAnimationFrame
+    // Prevents redundant layout queries and DOM mutations on every scroll tick
+    let isScrollTicking = false;
     window.addEventListener('scroll', () => {
-      if (window.scrollY > 20) {
-        header?.classList.add('scrolled');
-      } else {
-        header?.classList.remove('scrolled');
+      if (!isScrollTicking) {
+        isScrollTicking = true;
+        window.requestAnimationFrame(() => {
+          if (header) {
+            const shouldBeScrolled = window.scrollY > 20;
+            if (header.classList.contains('scrolled') !== shouldBeScrolled) {
+              header.classList.toggle('scrolled', shouldBeScrolled);
+            }
+          }
+          isScrollTicking = false;
+        });
       }
     }, { passive: true });
 
