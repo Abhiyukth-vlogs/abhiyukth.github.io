@@ -68,8 +68,8 @@ export const channelConfig = {
     liveTitle: "🔴 GTA 5 PS5 LIVE Streaming | Part 10 | Malayalam Live | Abhiyukth Vlogs",
     videoId: "rT8y9zNWqRU",
     category: "Live Replay",
-    note: "Completed live broadcast replay. Catch past stream replays or join the next live stream!"
-  ,  upcoming: {
+    note: "Completed live broadcast replay. Catch past stream replays or join the next live stream!",
+    upcoming: {
       title: "MALAYALAM'S FIRST EVER GTA 6 MULTI-STREAM! 🎮🔥 മലയാളത്തിലെ ആദ്യത്തെ ലൈവ്!",
       videoId: '8aeunJTnGDM',
       badge: 'Upcoming Special Event'

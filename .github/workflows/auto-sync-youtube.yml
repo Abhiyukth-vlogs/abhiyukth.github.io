@@ -1,22 +1,36 @@
-name: Auto-Sync YouTube Content (Shorts, Videos, Live, Playlists)
+name: Auto-Sync YouTube Content & Deploy to Vercel
 
 on:
   schedule:
-    # Run every 6 hours automatically
+    # Run every 6 hours automatically (00:00, 06:00, 12:00, 18:00 UTC)
     - cron: '0 */6 * * *'
-  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force Vercel deploy even if no content changes were detected'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
 
+concurrency:
+  group: 'youtube-sync'
+  cancel-in-progress: false
+
 jobs:
-  sync-youtube:
+  sync-and-deploy:
+    name: Sync YouTube & Deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -25,21 +39,53 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Sync Shorts, Videos, Live Streams & Playlists
+      - name: Fetch Latest YouTube Content (Videos, Shorts, Live, Playlists)
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           YOUTUBE_CHANNEL_ID: ${{ secrets.YOUTUBE_CHANNEL_ID || 'UCuG7-r1F3b2RzGoRFIe0MnQ' }}
         run: npm run sync:youtube
 
-      - name: Commit and Push if Changed
+      - name: Verify Production Build
+        run: npm run build
+
+      - name: Commit and Push to GitHub (Triggers Vercel Deployment)
+        id: git_push
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           if ! git diff --quiet src/data/channel.js; then
-            echo "Changes detected in YouTube content, committing..."
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            echo "Changes detected in YouTube content. Staging and committing..."
             git add src/data/channel.js
-            git commit -m "chore(auto-sync): update shorts, videos, live stream, and playlists from YouTube"
+            git commit -m "chore(auto-sync): update latest YouTube channel videos, shorts, live streams, and playlists"
             git push origin main
+            echo "Pushed changes to main branch. Vercel Git integration will automatically build and deploy."
           else
-            echo "No new YouTube updates detected. Workspace is up-to-date."
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No new changes detected. Workspace is already up-to-date."
           fi
+
+      - name: Trigger Vercel Deploy Hook (If Configured)
+        if: steps.git_push.outputs.has_changes == 'true' || github.event.inputs.force_deploy == 'true'
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$VERCEL_DEPLOY_HOOK" ]; then
+            echo "Triggering Vercel Deploy Hook..."
+            RESPONSE=$(curl -s -w "%{http_code}" -X POST "$VERCEL_DEPLOY_HOOK" -o /dev/null)
+            echo "Vercel Deploy Hook response code: $RESPONSE"
+          else
+            echo "VERCEL_DEPLOY_HOOK_URL secret not provided; deployment is handled by Git push to main."
+          fi
+
+      - name: Direct Deploy via Vercel CLI (If Token Configured)
+        if: (steps.git_push.outputs.has_changes == 'true' || github.event.inputs.force_deploy == 'true') && env.VERCEL_TOKEN != ''
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          echo "Deploying directly to Vercel via CLI..."
+          npx vercel pull --yes --environment=production
+          npx vercel build --prod
+          npx vercel deploy --prebuilt --prod

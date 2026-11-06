@@ -116,25 +116,25 @@ async function sync() {
 
   // 4. Update Live Stream Replay / Status if available
   if (liveRes.stream && liveRes.stream.videoId) {
-    const liveSnippet = {
-      isLive: !!liveRes.isLive,
-      badgeText: liveRes.badgeText || (liveRes.isLive ? 'LIVE NOW' : 'Latest Live Replay'),
-      liveTitle: liveRes.stream.title || '',
-      videoId: liveRes.stream.videoId,
-      category: liveRes.stream.category || 'Gaming / PS5',
-      note: liveRes.isLive 
-        ? 'Active live broadcast in progress! Join the chat and stream.'
-        : 'Completed live broadcast replay. Catch past stream replays or join the next live stream!'
-    };
+    const isLive = !!liveRes.isLive;
+    const badge = liveRes.badgeText || (isLive ? 'LIVE NOW' : 'Latest Live Replay');
+    const title = liveRes.stream.title || '';
+    const vidId = liveRes.stream.videoId;
+    const cat = liveRes.stream.category || 'Gaming / PS5';
+    const note = isLive
+      ? 'Active live broadcast in progress! Join the chat and stream.'
+      : 'Completed live broadcast replay. Catch past stream replays or join the next live stream!';
 
-    const liveJson = JSON.stringify(liveSnippet, null, 2)
-      .replace(/"([^"]+)":/g, '$1:')
-      .split('\n')
-      .map((line, idx) => (idx === 0 ? line : `  ${line}`))
-      .join('\n');
+    const liveBlock = [
+      `    isLive: ${isLive},`,
+      `    badgeText: ${JSON.stringify(badge)},`,
+      `    liveTitle: ${JSON.stringify(title)},`,
+      `    videoId: ${JSON.stringify(vidId)},`,
+      `    category: ${JSON.stringify(cat)},`,
+      `    note: ${JSON.stringify(note)},`
+    ].join('\n');
 
-    // Replace the liveStatus object up to the upcoming field
-    code = code.replace(/liveStatus:\s*\{[\s\S]*?upcoming:/, `liveStatus: ${liveJson.slice(0, -1)},  upcoming:`);
+    code = code.replace(/liveStatus:\s*\{[\s\S]*?upcoming:/, `liveStatus: {\n${liveBlock}\n    upcoming:`);
   }
 
   fs.writeFileSync(CHANNEL_FILE, code, 'utf8');

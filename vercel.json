@@ -5,6 +5,8 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/api/youtube/shorts", "destination": "/api/shorts" },
-    { "source": "/api/youtube/live", "destination": "/api/live" }
+    { "source": "/api/youtube/live", "destination": "/api/live" },
+    { "source": "/api/youtube/videos", "destination": "/api/videos" },
+    { "source": "/api/youtube/playlists", "destination": "/api/playlists" }
   ]
 }
