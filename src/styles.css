@@ -527,11 +527,13 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(34, 211, 238, 0.08));
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
   padding: 6px 14px;
   border-radius: var(--radius-full);
   align-self: flex-start;
+  backdrop-filter: blur(8px);
 }
 
 .badge-dot {
@@ -686,22 +688,136 @@ h1, h2, h3, h4, h5, h6 {
   color: #fff;
 }
 
-/* Three.js Canvas Container */
+/* 21st.dev Style 3D Glare HUD Hero Container */
 .hero-canvas-wrap {
   position: relative;
   width: 100%;
-  height: 400px;
+  height: 420px;
   border-radius: var(--radius-lg);
-  background: radial-gradient(circle at center, rgba(17, 21, 37, 0.6) 0%, rgba(7, 9, 17, 0.9) 100%);
-  border: 1px solid var(--surface-glass-border);
+  background: radial-gradient(circle at center, rgba(139, 92, 246, 0.08) 0%, rgba(7, 9, 17, 0.98) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.28);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px rgba(139, 92, 246, 0.16);
   overflow: hidden;
-  box-shadow: var(--shadow-md);
   touch-action: pan-y; /* Crucial: allows vertical scrolling on mobile touch without trapping! */
+  transition: border-color var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+
+.hero-canvas-wrap:hover {
+  border-color: rgba(34, 211, 238, 0.4);
+  box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.9), 0 0 45px rgba(34, 211, 238, 0.2);
 }
 
 @media (min-width: 960px) {
   .hero-canvas-wrap {
-    height: 520px;
+    height: 530px;
+  }
+}
+
+/* 21st.dev Dynamic Interactive Glare Overlay */
+.hero-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(600px circle at var(--glare-x, 50%) var(--glare-y, 50%), rgba(34, 211, 238, 0.12), rgba(139, 92, 246, 0.06) 40%, transparent 70%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.hero-canvas-wrap:hover .hero-glare {
+  opacity: 1;
+}
+
+/* 21st.dev Sci-Fi HUD Corner Brackets */
+.hud-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+  z-index: 3;
+  border-color: rgba(34, 211, 238, 0.65);
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.hud-corner-tl {
+  top: 12px;
+  left: 12px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.hud-corner-tr {
+  top: 12px;
+  right: 12px;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+
+.hud-corner-bl {
+  bottom: 12px;
+  left: 12px;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+}
+
+.hud-corner-br {
+  bottom: 12px;
+  right: 12px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+.hero-canvas-wrap:hover .hud-corner {
+  border-color: rgba(139, 92, 246, 0.9);
+}
+
+/* 21st.dev Holographic Telemetry HUD Bar */
+.hero-telemetry-bar {
+  position: absolute;
+  top: 12px;
+  left: 28px;
+  right: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 3;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.telemetry-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(7, 9, 17, 0.65);
+  backdrop-filter: blur(8px);
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+}
+
+.telemetry-dot.live {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22D3EE;
+  box-shadow: 0 0 8px #22D3EE;
+  animation: pulseDot 1.6s infinite ease-in-out;
+}
+
+.telemetry-val {
+  font-weight: 700;
+  color: #F5F7FF;
+}
+
+@media (max-width: 600px) {
+  .telemetry-coords {
+    display: none;
   }
 }
 
@@ -715,19 +831,73 @@ h1, h2, h3, h4, h5, h6 {
   cursor: grabbing;
 }
 
-.canvas-hint {
+/* HUD Footer & Chips */
+.canvas-hud-footer {
   position: absolute;
   bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(7, 9, 17, 0.65);
-  backdrop-filter: blur(8px);
-  padding: 4px 12px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.canvas-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(7, 9, 17, 0.75);
+  backdrop-filter: blur(10px);
+  padding: 4px 14px;
   border-radius: var(--radius-full);
   font-size: 0.72rem;
-  color: var(--text-muted);
-  pointer-events: none;
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   white-space: nowrap;
+}
+
+.canvas-hint svg {
+  color: var(--accent-cyan);
+  flex-shrink: 0;
+}
+
+.canvas-chips {
+  display: flex;
+  gap: 8px;
+}
+
+.canvas-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  background: rgba(17, 21, 37, 0.65);
+  backdrop-filter: blur(6px);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.chip-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.chip-dot.cyan {
+  background: #22D3EE;
+  box-shadow: 0 0 6px #22D3EE;
+}
+
+.chip-dot.purple {
+  background: #8B5CF6;
+  box-shadow: 0 0 6px #8B5CF6;
 }
 
 /* WebGL Fallback Container */
@@ -799,17 +969,32 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .metric-card {
-  padding: 16px;
-  background: var(--surface-glass);
-  border: 1px solid var(--surface-glass-border);
+  position: relative;
+  padding: 20px 16px;
+  background: linear-gradient(135deg, rgba(24, 30, 52, 0.65) 0%, rgba(13, 17, 30, 0.85) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.2);
   border-radius: var(--radius-md);
   text-align: center;
-  transition: transform var(--transition-fast), border-color var(--transition-fast);
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-purple), var(--accent-cyan), transparent);
+  opacity: 0.6;
 }
 
 .metric-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(139, 92, 246, 0.4);
+  transform: translateY(-4px);
+  border-color: rgba(34, 211, 238, 0.45);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 25px rgba(34, 211, 238, 0.15);
 }
 
 .metric-value {

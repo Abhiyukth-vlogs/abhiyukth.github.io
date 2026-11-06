@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "project": {
+    "name": "abhiyukth-vlogs-website",
+    "productType": "gaming-creator-portfolio",
+    "stack": [
+      "vite",
+      "threejs"
+    ]
+  },
+  "sources": {
+    "tokens": [
+      "src/styles.css"
+    ],
+    "components": [
+      "src/scene.js",
+      "src/main.js"
+    ],
+    "assets": [
+      "public/assets"
+    ],
+    "instructions": []
+  },
+  "design": {
+    "colorMode": "dark",
+    "colors": {
+      "primary": "#8B5CF6",
+      "secondary": "#22D3EE",
+      "accent": "#FF0033",
+      "background": "#070911",
+      "surface": "#111525"
+    },
+    "typography": {
+      "display": "Plus Jakarta Sans",
+      "body": "Inter"
+    },
+    "spacing": {
+      "base": "8px"
+    },
+    "radius": {
+      "sm": "8px",
+      "md": "14px",
+      "lg": "20px",
+      "full": "9999px"
+    },
+    "shadows": {
+      "glowPurple": "0 0 35px rgba(139, 92, 246, 0.25)",
+      "glowCyan": "0 0 35px rgba(34, 211, 238, 0.22)"
+    },
+    "motion": {
+      "style": "Smooth Cinematic Motion",
+      "reducedMotion": "supported"
+    },
+    "density": "comfortable"
+  },
+  "components": {
+    "installed": [
+      "glare-cards",
+      "glowing-card",
+      "glow-effect",
+      "cyber-matrix-hero"
+    ],
+    "preferredPrimitives": [
+      "21st-glare-card",
+      "21st-telemetry-hud",
+      "21st-hud-brackets",
+      "21st-metric-glow"
+    ],
+    "patterns": [
+      "3d-hero-viewport",
+      "cursor-following-glare",
+      "cyber-holographic-telemetry",
+      "interactive-tactile-3d-controller"
+    ]
+  },
+  "constraints": {
+    "must": [
+      "Preserve all YouTube API integrations and authentic channel stats",
+      "Support responsive mobile touch and desktop mouse parallax",
+      "Support reduced-motion preferences with smooth degradation",
+      "Maintain zero-friction playback with YouTube modal player"
+    ],
+    "avoid": [
+      "Blocking touch scrolling on mobile",
+      "Overloading GPU on mobile viewports",
+      "Inventing fake channel metrics"
+    ]
+  },
+  "decisions": [
+    {
+      "feature": "3D Hero Redesign",
+      "style": "Futuristic Gaming Universe",
+      "mainObject": "Floating PS5 DualSense Controller",
+      "primaryColor": "Neon Purple (#8B5CF6)",
+      "secondaryColor": "Electric Cyan (#22D3EE)",
+      "components": "21st.dev Glare HUD Card, Corner Brackets, Holographic Telemetry Bar"
+    }
+  ],
+  "evidence": [
+    {
+      "fact": "project.stack:vite",
+      "source": "package.json"
+    },
+    {
+      "fact": "3d.engine:threejs",
+      "source": "src/scene.js"
+    }
+  ],
+  "generatedAt": "2026-11-06T16:30:00.000Z"
+}

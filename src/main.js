@@ -116,6 +116,18 @@ class App {
         if (textSpan) textSpan.textContent = 'Pause Motion';
       }
     });
+
+    // 21st.dev Dynamic Interactive Glare Tracking on Hero 3D Card
+    const heroWrap = document.getElementById('hero-canvas-wrap');
+    if (heroWrap) {
+      heroWrap.addEventListener('pointermove', (e) => {
+        const rect = heroWrap.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        heroWrap.style.setProperty('--glare-x', `${x}px`);
+        heroWrap.style.setProperty('--glare-y', `${y}px`);
+      }, { passive: true });
+    }
   }
 
   /* ---------------------------------------------------------
