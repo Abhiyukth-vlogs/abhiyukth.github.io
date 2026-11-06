@@ -226,17 +226,25 @@ class App {
       });
     });
 
-    // Real-time Search Input
+    // Debounced Search Input (prevents DOM reconstruction & layout thrashing on rapid keystrokes)
+    let searchDebounceTimer = null;
     searchInput?.addEventListener('input', (e) => {
-      this.searchQuery = e.target.value.trim().toLowerCase();
+      const rawValue = e.target.value.trim().toLowerCase();
       if (clearBtn) {
-        clearBtn.style.display = this.searchQuery ? 'block' : 'none';
+        clearBtn.style.display = rawValue ? 'block' : 'none';
       }
-      this.renderVideoCatalog();
+
+      // 150ms debounce: preserves responsive feel while avoiding redundant renders during fast typing
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        this.searchQuery = rawValue;
+        this.renderVideoCatalog();
+      }, 150);
     });
 
-    // Clear Search Button
+    // Clear Search Button (instant execution, cancels pending search debounce)
     clearBtn?.addEventListener('click', () => {
+      clearTimeout(searchDebounceTimer);
       if (searchInput) searchInput.value = '';
       this.searchQuery = '';
       clearBtn.style.display = 'none';
