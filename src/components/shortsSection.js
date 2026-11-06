@@ -211,7 +211,7 @@ export class ShortsSection {
     const safeViews = this.escapeHtml(short.views || short.viewCountFormatted || 'Recent Short');
     const safeTime = this.escapeHtml(short.timeAgo || (short.publishedAt ? this.formatRelativeTime(short.publishedAt) : 'Recent'));
     const safeDuration = this.escapeHtml(short.duration || (short.durationSeconds ? `0:${String(short.durationSeconds).padStart(2, '0')}` : 'Short'));
-    
+
     // Thumbnail resolution with multiple fallback levels
     const thumbUrl = short.thumbnail || `https://i.ytimg.com/vi/${short.id}/hq720.jpg`;
     const fallbackThumb = `https://i.ytimg.com/vi/${short.id}/hqdefault.jpg`;
