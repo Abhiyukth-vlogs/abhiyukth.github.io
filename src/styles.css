@@ -3015,6 +3015,34 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--yt-red);
 }
 
+.shorts-yt-direct-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(15, 17, 26, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  color: #fff;
+  z-index: 3;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.shorts-yt-direct-btn:hover {
+  background: var(--yt-red);
+  color: #fff;
+  transform: scale(1.12);
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(255, 0, 0, 0.45);
+}
+
 .shorts-duration-pill {
   position: absolute;
   bottom: 12px;

@@ -89,18 +89,18 @@ export class ShortsSection {
     this.isLoading = true;
 
     try {
-      // Try /api/youtube/shorts, fallback to /api/shorts
+      // Try /api/youtube/shorts, fallback to /api/shorts with 12s timeout
       let response;
       try {
         response = await fetch('/api/youtube/shorts', {
           headers: { 'Accept': 'application/json' },
-          signal: AbortSignal.timeout(8000)
+          signal: AbortSignal.timeout(12000)
         });
       } catch (err) {
         // Fallback endpoint
         response = await fetch('/api/shorts', {
           headers: { 'Accept': 'application/json' },
-          signal: AbortSignal.timeout(8000)
+          signal: AbortSignal.timeout(12000)
         });
       }
 
@@ -126,17 +126,30 @@ export class ShortsSection {
   }
 
   /**
-   * Merge new items deduplicated by video ID
+   * Merge new items deduplicated by video ID with metadata updates
    */
   mergeNewShorts(newItems) {
-    const existingIds = new Set(this.shorts.map(s => s.id));
+    const existingMap = new Map(this.shorts.map(s => [s.id, s]));
     let hasChanges = false;
 
     // Check for new items or updated metadata
     newItems.forEach(item => {
-      if (!existingIds.has(item.id)) {
+      const existing = existingMap.get(item.id);
+      if (!existing) {
         this.shorts.unshift(item);
+        existingMap.set(item.id, item);
         hasChanges = true;
+      } else {
+        // Synchronize newer view count or title if updated
+        if (item.views && item.views !== existing.views) {
+          existing.views = item.views;
+          existing.viewCount = item.viewCount;
+          hasChanges = true;
+        }
+        if (item.title && item.title !== existing.title) {
+          existing.title = item.title;
+          hasChanges = true;
+        }
       }
     });
 
@@ -232,6 +245,20 @@ export class ShortsSection {
             <span>Shorts</span>
           </div>
 
+          <!-- Direct YouTube Link Button -->
+          <a
+            href="https://www.youtube.com/shorts/${short.id}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="shorts-yt-direct-btn"
+            title="Watch directly on YouTube"
+            aria-label="Watch ${safeTitle} directly on YouTube"
+          >
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+              <path d="M21.58 7.19a2.76 2.76 0 00-1.94-1.96C17.92 4.75 12 4.75 12 4.75s-5.92 0-7.64.48A2.76 2.76 0 002.42 7.2 28.9 28.9 0 002 12c0 1.63.14 3.24.42 4.81.27.97 1.05 1.74 1.94 1.96 1.72.48 7.64.48 7.64.48s5.92 0 7.64-.48a2.76 2.76 0 001.94-1.96c.28-1.57.42-3.18.42-4.81 0-1.63-.14-3.24-.42-4.81zM10 15V9l5.2 3L10 15z"/>
+            </svg>
+          </a>
+
           <!-- Hover Play Overlay Button -->
           <div class="shorts-play-hover" aria-hidden="true">
             <div class="shorts-play-circle">
@@ -273,9 +300,14 @@ export class ShortsSection {
         }
       };
 
-      card.addEventListener('click', triggerPlayback);
+      card.addEventListener('click', (e) => {
+        // If clicking the direct YouTube link button, let the anchor open normally without triggering the modal
+        if (e.target.closest('.shorts-yt-direct-btn')) return;
+        triggerPlayback();
+      });
 
       card.addEventListener('keydown', (e) => {
+        if (e.target.closest('.shorts-yt-direct-btn')) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           triggerPlayback();
