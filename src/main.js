@@ -19,6 +19,11 @@ class App {
     this.liveSection = null;
     this.activeCategory = 'All';
     this.searchQuery = '';
+    this.videos = [...(channelConfig.videos || [])];
+    this.playlists = [...(channelConfig.playlists || [])];
+    this.featuredVideo = channelConfig.featuredVideo;
+    this.videosRefreshTimer = null;
+    this.playlistsRefreshTimer = null;
 
     this.init();
   }
@@ -36,7 +41,12 @@ class App {
     this.renderPlaylists();
     this.initLiveMilestonesCountdown();
 
-    // 3. Setup Navigation & Interaction Listeners
+    // 3. Setup Dynamic Real-time Fetching (Shorts, Video, Live, Playlist)
+    this.fetchLiveVideos();
+    this.fetchLivePlaylists();
+    this.setupAutoSyncLoops();
+
+    // 4. Setup Navigation & Interaction Listeners
     this.setupHeroControls();
     this.setupCatalogToolbar();
     this.setupNavigation();
@@ -273,12 +283,87 @@ class App {
     });
   }
 
+  /* ---------------------------------------------------------
+     Dynamic Auto-Sync for Videos & Playlists
+     --------------------------------------------------------- */
+  async fetchLiveVideos() {
+    try {
+      let response;
+      try {
+        response = await fetch('/api/youtube/videos', {
+          headers: { 'Accept': 'application/json' },
+          signal: AbortSignal.timeout(10000)
+        });
+      } catch {
+        response = await fetch('/api/videos', {
+          headers: { 'Accept': 'application/json' },
+          signal: AbortSignal.timeout(10000)
+        });
+      }
+
+      if (!response.ok) return;
+      const data = await response.json();
+      if (data && Array.isArray(data.items) && data.items.length > 0) {
+        this.videos = data.items;
+        this.renderVideoCatalog();
+      }
+    } catch (err) {
+      console.info('[Videos] Live fetch notice:', err.message, '- Using verified baseline');
+    }
+  }
+
+  async fetchLivePlaylists() {
+    try {
+      let response;
+      try {
+        response = await fetch('/api/youtube/playlists', {
+          headers: { 'Accept': 'application/json' },
+          signal: AbortSignal.timeout(10000)
+        });
+      } catch {
+        response = await fetch('/api/playlists', {
+          headers: { 'Accept': 'application/json' },
+          signal: AbortSignal.timeout(10000)
+        });
+      }
+
+      if (!response.ok) return;
+      const data = await response.json();
+      if (data && Array.isArray(data.items) && data.items.length > 0) {
+        this.playlists = data.items;
+        this.renderPlaylists();
+      }
+    } catch (err) {
+      console.info('[Playlists] Live fetch notice:', err.message, '- Using verified baseline');
+    }
+  }
+
+  setupAutoSyncLoops() {
+    // Videos: refresh every 5 minutes
+    this.videosRefreshTimer = setInterval(() => {
+      if (!document.hidden) this.fetchLiveVideos();
+    }, 5 * 60 * 1000);
+
+    // Playlists: refresh every 10 minutes
+    this.playlistsRefreshTimer = setInterval(() => {
+      if (!document.hidden) this.fetchLivePlaylists();
+    }, 10 * 60 * 1000);
+
+    // Refresh when user returns to active browser tab
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        this.fetchLiveVideos();
+        this.fetchLivePlaylists();
+      }
+    });
+  }
+
   renderVideoCatalog() {
     const grid = document.getElementById('videos-grid');
     const emptyState = document.getElementById('videos-empty-state');
     if (!grid) return;
 
-    let filtered = channelConfig.videos;
+    let filtered = this.videos;
 
     // Filter by Category
     if (this.activeCategory !== 'All') {
@@ -385,7 +470,7 @@ class App {
     const grid = document.getElementById('playlists-grid');
     if (!grid) return;
 
-    grid.innerHTML = channelConfig.playlists.map(p => `
+    grid.innerHTML = this.playlists.map(p => `
       <a 
         href="${p.url}" 
         target="_blank" 

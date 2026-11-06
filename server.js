@@ -6,6 +6,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getShortsFeed } from './api/_lib/youtubeShorts.js';
 import { getLiveStreamData } from './api/_lib/youtubeLive.js';
+import { getVideosFeed } from './api/_lib/youtubeVideos.js';
+import { getPlaylistsFeed } from './api/_lib/youtubePlaylists.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -189,6 +191,48 @@ const liveHandler = async (req, res) => {
 
 app.get('/api/youtube/live', liveHandler);
 app.get('/api/live', liveHandler);
+
+/**
+ * GET /api/youtube/videos & GET /api/videos
+ * Returns dynamically discovered long-form videos
+ */
+const videosHandler = async (req, res) => {
+  try {
+    const feed = await getVideosFeed();
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+    return res.json(feed);
+  } catch (error) {
+    return res.status(200).json({
+      success: false,
+      error: error.message,
+      items: []
+    });
+  }
+};
+
+app.get('/api/youtube/videos', videosHandler);
+app.get('/api/videos', videosHandler);
+
+/**
+ * GET /api/youtube/playlists & GET /api/playlists
+ * Returns dynamically discovered YouTube playlists
+ */
+const playlistsHandler = async (req, res) => {
+  try {
+    const feed = await getPlaylistsFeed();
+    res.setHeader('Cache-Control', 'public, max-age=600, stale-while-revalidate=1200');
+    return res.json(feed);
+  } catch (error) {
+    return res.status(200).json({
+      success: false,
+      error: error.message,
+      items: []
+    });
+  }
+};
+
+app.get('/api/youtube/playlists', playlistsHandler);
+app.get('/api/playlists', playlistsHandler);
 
 /**
  * GET /api/auth/status

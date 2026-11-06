@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "server": "node server.js",
     "start": "node server.js",
+    "sync:youtube": "node scripts/sync-youtube.js",
     "ship": "npm run build && git add . && git commit -m \"Update website\" && git push origin main"
   },
   "dependencies": {
