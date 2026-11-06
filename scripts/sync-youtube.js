@@ -20,6 +20,7 @@ import { getShortsFeed } from '../api/_lib/youtubeShorts.js';
 import { getVideosFeed } from '../api/_lib/youtubeVideos.js';
 import { getLiveStreamData } from '../api/_lib/youtubeLive.js';
 import { getPlaylistsFeed } from '../api/_lib/youtubePlaylists.js';
+import { getFeaturedChannelsFeed } from '../api/_lib/youtubeFeaturedChannels.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,14 +29,15 @@ const CHANNEL_FILE = path.resolve(__dirname, '../src/data/channel.js');
 async function sync() {
   console.log('[Sync] Starting YouTube content synchronization...');
 
-  const [shortsRes, videosRes, liveRes, playlistsRes] = await Promise.all([
+  const [shortsRes, videosRes, liveRes, playlistsRes, featuredRes] = await Promise.all([
     getShortsFeed().catch(err => ({ items: [], error: err.message })),
     getVideosFeed().catch(err => ({ items: [], error: err.message })),
     getLiveStreamData().catch(err => ({ error: err.message })),
-    getPlaylistsFeed().catch(err => ({ items: [], error: err.message }))
+    getPlaylistsFeed().catch(err => ({ items: [], error: err.message })),
+    getFeaturedChannelsFeed().catch(err => ({ sections: [], error: err.message }))
   ]);
 
-  console.log(`[Sync] Fetched: ${shortsRes.items?.length || 0} Shorts, ${videosRes.items?.length || 0} Videos, ${playlistsRes.items?.length || 0} Playlists.`);
+  console.log(`[Sync] Fetched: ${shortsRes.items?.length || 0} Shorts, ${videosRes.items?.length || 0} Videos, ${playlistsRes.items?.length || 0} Playlists, ${featuredRes.sections?.length || 0} Featured Sections.`);
   console.log(`[Sync] Live Stream Status: ${liveRes.isLive ? 'LIVE' : 'Replay'} (${liveRes.stream?.videoId || 'none'})`);
 
   if (!fs.existsSync(CHANNEL_FILE)) {
@@ -111,10 +113,39 @@ async function sync() {
       .map((line, idx) => (idx === 0 ? line : `  ${line}`))
       .join('\n');
 
-    code = code.replace(/playlists:\s*\[[\s\S]*?\n\s*\]/, `playlists: ${playlistsJson}`);
+    code = code.replace(/playlists:\s*\[[\s\S]*?\n\s*\],/, `playlists: ${playlistsJson},`);
   }
 
-  // 4. Update Live Stream Replay / Status if available
+  // 4. Update Featured Channels (if sections available)
+  if (featuredRes.sections && featuredRes.sections.length > 0) {
+    const formattedSections = featuredRes.sections.map(s => ({
+      id: s.id,
+      title: s.title,
+      slug: s.slug,
+      displayTitle: s.displayTitle,
+      description: s.description,
+      channels: (s.channels || []).map(ch => ({
+        id: ch.id,
+        title: ch.title,
+        handle: ch.handle,
+        avatar: ch.avatar,
+        url: ch.url,
+        subscriberCount: ch.subscriberCount || 0,
+        subscriberCountFormatted: ch.subscriberCountFormatted,
+        videoCount: ch.videoCount || 0
+      }))
+    }));
+
+    const featuredJson = JSON.stringify(formattedSections, null, 2)
+      .replace(/"([^"]+)":/g, '$1:')
+      .split('\n')
+      .map((line, idx) => (idx === 0 ? line : `  ${line}`))
+      .join('\n');
+
+    code = code.replace(/featuredChannels:\s*\[[\s\S]*?\n  \]\n\};/, `featuredChannels: ${featuredJson}\n};`);
+  }
+
+  // 5. Update Live Stream Replay / Status if available
   if (liveRes.stream && liveRes.stream.videoId) {
     const isLive = !!liveRes.isLive;
     const badge = liveRes.badgeText || (isLive ? 'LIVE NOW' : 'Latest Live Replay');

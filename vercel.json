@@ -7,6 +7,7 @@
     { "source": "/api/youtube/shorts", "destination": "/api/shorts" },
     { "source": "/api/youtube/live", "destination": "/api/live" },
     { "source": "/api/youtube/videos", "destination": "/api/videos" },
-    { "source": "/api/youtube/playlists", "destination": "/api/playlists" }
+    { "source": "/api/youtube/playlists", "destination": "/api/playlists" },
+    { "source": "/api/youtube/featured-channels", "destination": "/api/featured-channels" }
   ]
 }

@@ -115,6 +115,7 @@
           <li><a href="#videos" class="nav-link">Videos</a></li>
           <li><a href="#live" class="nav-link">Live</a></li>
           <li><a href="#playlists" class="nav-link">Playlists</a></li>
+          <li><a href="#channels" class="nav-link">Channels</a></li>
           <li><a href="#about" class="nav-link">About</a></li>
         </ul>
       </nav>
@@ -162,6 +163,7 @@
             <li><a href="#videos" class="mobile-nav-link">Videos</a></li>
             <li><a href="#live" class="mobile-nav-link">Live</a></li>
             <li><a href="#playlists" class="mobile-nav-link">Playlists</a></li>
+            <li><a href="#channels" class="mobile-nav-link">Channels</a></li>
             <li><a href="#about" class="mobile-nav-link">About</a></li>
           </ul>
         </nav>
@@ -546,7 +548,83 @@
       </div>
     </section>
 
-    <!-- 6. About Section -->
+    <!-- 6. Featured Channels Section -->
+    <section class="section featured-channels-section" id="channels" aria-labelledby="channels-heading">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">COMMUNITY & NETWORK</div>
+          <h2 class="section-title" id="channels-heading">Featured & Pinned Channels</h2>
+          <p class="section-subtitle">Discover creator friends, gaming partners, and official network channels connected to Abhiyukth</p>
+        </div>
+
+        <!-- Filter Tabs / Controls -->
+        <div class="channels-controls-bar">
+          <div class="channels-filter-tabs" id="channels-filter-tabs" role="tablist" aria-label="Featured Channels Categories">
+            <button 
+              type="button" 
+              class="channel-filter-btn active" 
+              data-filter="all" 
+              role="tab" 
+              aria-selected="true"
+            >
+              <span class="tab-label">All Channels</span>
+              <span class="tab-count" id="tab-count-all">22</span>
+            </button>
+            <button 
+              type="button" 
+              class="channel-filter-btn" 
+              data-filter="friends" 
+              role="tab" 
+              aria-selected="false"
+            >
+              <span class="tab-dot dot-friends"></span>
+              <span class="tab-label">Favourite & Friends</span>
+              <span class="tab-count" id="tab-count-friends">10</span>
+            </button>
+            <button 
+              type="button" 
+              class="channel-filter-btn" 
+              data-filter="abhijairaj" 
+              role="tab" 
+              aria-selected="false"
+            >
+              <span class="tab-dot dot-network"></span>
+              <span class="tab-label">Abhijairajs Channel</span>
+              <span class="tab-count" id="tab-count-network">12</span>
+            </button>
+          </div>
+
+          <div class="channels-status-indicator-wrap">
+            <span class="pulse-indicator-dot"></span>
+            <span class="channels-status-text" id="channels-status-text">Verified Channel Sections</span>
+            <span class="channels-count-badge" id="channels-count-badge">22 Channels</span>
+          </div>
+        </div>
+
+        <!-- Channels Grid -->
+        <div class="featured-channels-grid" id="featured-channels-grid">
+          <!-- Populated dynamically by featuredChannelsSection.js -->
+        </div>
+
+        <!-- Section Footer CTA -->
+        <div class="channels-cta-wrap">
+          <a 
+            href="https://www.youtube.com/@abhiyukthvlogs/channels" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="btn btn-secondary"
+          >
+            <span>Explore All Recommended Channels on YouTube</span>
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+              <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. About Section -->
     <section class="section about-section" id="about" aria-labelledby="about-heading">
       <div class="container">
         <div class="about-card">
@@ -836,6 +914,7 @@
         <a href="#videos">Videos</a>
         <a href="#live">Live</a>
         <a href="#playlists">Playlists</a>
+        <a href="#channels">Channels</a>
         <a href="#about">About</a>
         <a href="https://www.youtube.com/@abhiyukthvlogs" target="_blank" rel="noopener noreferrer">YouTube Channel</a>
       </div>

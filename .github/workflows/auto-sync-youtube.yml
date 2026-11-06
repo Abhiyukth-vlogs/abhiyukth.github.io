@@ -39,7 +39,7 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Fetch Latest YouTube Content (Videos, Shorts, Live, Playlists)
+      - name: Fetch Latest YouTube Content (Videos, Shorts, Live, Playlists, Channels)
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           YOUTUBE_CHANNEL_ID: ${{ secrets.YOUTUBE_CHANNEL_ID || 'UCuG7-r1F3b2RzGoRFIe0MnQ' }}
@@ -57,7 +57,7 @@ jobs:
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
             echo "Changes detected in YouTube content. Staging and committing..."
             git add src/data/channel.js
-            git commit -m "chore(auto-sync): update latest YouTube channel videos, shorts, live streams, and playlists"
+            git commit -m "chore(auto-sync): update latest YouTube content (videos, shorts, live, playlists, featured channels)"
             git push origin main
             echo "Pushed changes to main branch. Vercel Git integration will automatically build and deploy."
           else

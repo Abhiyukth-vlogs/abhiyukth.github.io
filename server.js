@@ -8,6 +8,7 @@ import { getShortsFeed } from './api/_lib/youtubeShorts.js';
 import { getLiveStreamData } from './api/_lib/youtubeLive.js';
 import { getVideosFeed } from './api/_lib/youtubeVideos.js';
 import { getPlaylistsFeed } from './api/_lib/youtubePlaylists.js';
+import { getFeaturedChannelsFeed } from './api/_lib/youtubeFeaturedChannels.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -235,6 +236,27 @@ app.get('/api/youtube/playlists', playlistsHandler);
 app.get('/api/playlists', playlistsHandler);
 
 /**
+ * GET /api/youtube/featured-channels & GET /api/featured-channels
+ * Returns dynamically discovered featured & pinned channels
+ */
+const featuredChannelsHandler = async (req, res) => {
+  try {
+    const feed = await getFeaturedChannelsFeed();
+    res.setHeader('Cache-Control', 'public, max-age=900, stale-while-revalidate=1800');
+    return res.json(feed);
+  } catch (error) {
+    return res.status(200).json({
+      success: false,
+      error: error.message,
+      sections: []
+    });
+  }
+};
+
+app.get('/api/youtube/featured-channels', featuredChannelsHandler);
+app.get('/api/featured-channels', featuredChannelsHandler);
+
+/**
  * GET /api/auth/status
  * Reports YouTube API and owner OAuth connection status
  */
@@ -358,6 +380,9 @@ app.listen(PORT, () => {
   console.log(`📡 Subscribers Endpoint: http://localhost:${PORT}/api/subscribers`);
   console.log(`🎬 Shorts Endpoint:      http://localhost:${PORT}/api/youtube/shorts`);
   console.log(`🔴 Live Stream Endpoint: http://localhost:${PORT}/api/youtube/live`);
+  console.log(`📺 Videos Endpoint:      http://localhost:${PORT}/api/youtube/videos`);
+  console.log(`📑 Playlists Endpoint:   http://localhost:${PORT}/api/youtube/playlists`);
+  console.log(`👥 Channels Endpoint:    http://localhost:${PORT}/api/youtube/featured-channels`);
   console.log(`🔒 YouTube API Key:      ${API_KEY ? 'Configured & Secured' : 'NOT SET in .env'}`);
   console.log(`=============================================`);
 });

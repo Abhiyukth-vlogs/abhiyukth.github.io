@@ -3,6 +3,7 @@ import { VideoModal } from './components/videoModal.js';
 import { Odometer } from './components/odometer.js';
 import { ShortsSection } from './components/shortsSection.js';
 import { LiveSection } from './components/liveSection.js';
+import { FeaturedChannelsSection } from './components/featuredChannelsSection.js';
 
 const BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || './';
 const FALLBACK_AVATAR = `${BASE}assets/avatar-fallback.svg`;
@@ -21,6 +22,7 @@ class App {
     this.searchQuery = '';
     this.videos = [...(channelConfig.videos || [])];
     this.playlists = [...(channelConfig.playlists || [])];
+    this.featuredChannelsSection = null;
     this.featuredVideo = channelConfig.featuredVideo;
     this.videosRefreshTimer = null;
     this.playlistsRefreshTimer = null;
@@ -39,6 +41,7 @@ class App {
     this.renderVideoCatalog();
     this.renderLiveSection();
     this.renderPlaylists();
+    this.initFeaturedChannelsSection();
     this.initLiveMilestonesCountdown();
 
     // 3. Setup Dynamic Real-time Fetching (Shorts, Video, Live, Playlist)
@@ -500,6 +503,13 @@ class App {
         </div>
       </a>
     `).join('');
+  }
+
+  /* ---------------------------------------------------------
+     Featured & Pinned Channels Section
+     --------------------------------------------------------- */
+  initFeaturedChannelsSection() {
+    this.featuredChannelsSection = new FeaturedChannelsSection();
   }
 
   /* ---------------------------------------------------------
