@@ -1,14 +1,16 @@
 import * as THREE from 'three';
 
 /**
- * Premium 3D Futuristic Gaming Universe for Abhiyukth Vlogs
- * Built with procedural DualSense PS5 controller, holographic gyroscopic rings,
- * quantum energy relics, glowing cosmic starfield, and cinematic lighting.
- * 
+ * Exact PlayStation 5 DualSense Controller 3D Experience
+ * Authentic two-tone sculpted ergonomics: ceramic white outer shell, midnight inner chassis,
+ * 3-sided glowing LED lightbar enveloping the touchpad, textured dual analog thumbsticks with
+ * concave thumb cups, crystal PlayStation action buttons (△, ○, ✕, □), 4-way D-Pad, L1/R1 bumpers,
+ * and flared L2/R2 adaptive triggers.
+ *
  * 3D Style: Futuristic Gaming Universe
- * Main 3D Object: Floating PS5 DualSense Controller
- * Primary Palette: Neon Purple (#8B5CF6) & Electric Cyan (#22D3EE)
- * Interactivity: Mouse, Touch, Scroll
+ * Main 3D Object: Exact Floating PS5 DualSense Controller
+ * Lighting: Neon Purple (#8B5CF6) & Electric Cyan (#22D3EE)
+ * Interactivity: 360° Tactile Drag, Smooth Mouse Parallax, Scroll Depth Dolly
  */
 
 export class HeroScene {
@@ -42,16 +44,16 @@ export class HeroScene {
     // Animation targets for mode transitions
     this.modeTargets = {
       gaming: {
-        controller: { pos: new THREE.Vector3(0, 0.08, 0), rot: new THREE.Vector3(0.12, -0.22, 0.05), scale: 1.25 },
-        playIcon: { pos: new THREE.Vector3(-2.6, 1.5, -1.6), rot: new THREE.Vector3(0, 0.5, 0.1), scale: 0.85 },
+        controller: { pos: new THREE.Vector3(0, 0.05, 0), rot: new THREE.Vector3(0.14, -0.25, 0.06), scale: 1.3 },
+        playIcon: { pos: new THREE.Vector3(-2.8, 1.6, -1.8), rot: new THREE.Vector3(0, 0.55, 0.1), scale: 0.8 },
         lightColor: new THREE.Color(0x8B5CF6), // Neon Purple
-        accentIntensity: 4.8
+        accentIntensity: 5.2
       },
       vlogs: {
-        controller: { pos: new THREE.Vector3(-2.2, -0.6, -1.2), rot: new THREE.Vector3(0.18, 0.55, -0.08), scale: 0.88 },
-        playIcon: { pos: new THREE.Vector3(1.2, 0.3, 0.4), rot: new THREE.Vector3(0, -0.35, 0), scale: 1.28 },
+        controller: { pos: new THREE.Vector3(-2.3, -0.5, -1.2), rot: new THREE.Vector3(0.18, 0.6, -0.08), scale: 0.9 },
+        playIcon: { pos: new THREE.Vector3(1.2, 0.25, 0.5), rot: new THREE.Vector3(0, -0.35, 0), scale: 1.3 },
         lightColor: new THREE.Color(0x22D3EE), // Electric Cyan
-        accentIntensity: 4.5
+        accentIntensity: 4.8
       }
     };
 
@@ -97,7 +99,7 @@ export class HeroScene {
     const width = Math.max(this.container.clientWidth || 0, 320);
     const height = Math.max(this.container.clientHeight || 0, 350);
 
-    this.camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+    this.camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
     this.camera.position.set(0, 0, 9.2);
 
     this.renderer = new THREE.WebGLRenderer({
@@ -110,44 +112,49 @@ export class HeroScene {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
     this.renderer.setSize(width, height);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.25;
+    this.renderer.toneMappingExposure = 1.3;
 
     this.container.appendChild(this.renderer.domElement);
     this.renderer.domElement.setAttribute('aria-hidden', 'true');
 
-    // Interactive root group responding to cursor parallax, drag & auto-orbit
+    // Root interactive group that responds to drag, cursor parallax & auto-orbit
     this.interactiveGroup = new THREE.Group();
     this.scene.add(this.interactiveGroup);
   }
 
   setupLights() {
-    // 1. Deep space indigo ambient fill
-    const ambientLight = new THREE.AmbientLight(0x0e1428, 2.2);
+    // 1. Deep cosmic indigo ambient fill
+    const ambientLight = new THREE.AmbientLight(0x0b1020, 2.4);
     this.scene.add(ambientLight);
 
-    // 2. Main Key Light (Electric Cyan specular highlights)
-    const keyLight = new THREE.DirectionalLight(0x22D3EE, 3.2);
+    // 2. Key Light (Electric Cyan specular highlights)
+    const keyLight = new THREE.DirectionalLight(0x22D3EE, 3.4);
     keyLight.position.set(6, 6, 7);
     this.scene.add(keyLight);
 
-    // 3. Rim / Silhouette Light (Neon Purple edge glow)
-    const rimLight = new THREE.DirectionalLight(0x8B5CF6, 3.6);
+    // 3. Rim / Silhouette Light (Neon Purple razor edge glow)
+    const rimLight = new THREE.DirectionalLight(0x8B5CF6, 3.8);
     rimLight.position.set(-6, -4, -5);
     this.scene.add(rimLight);
 
-    // 4. Subtle top white gleam for controller materials
-    const topLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    // 4. Top White Studio Gleam for clearcoat plastic reflections
+    const topLight = new THREE.DirectionalLight(0xffffff, 1.8);
     topLight.position.set(0, 9, 3);
     this.scene.add(topLight);
 
-    // 5. Breathing Haptic Point Light (Pulses from within controller)
+    // 5. DualSense Lightbar Spill Point Light (Directly illuminates the white casing)
+    this.lightbarSpillLight = new THREE.PointLight(0x8B5CF6, 3.2, 5, 1.5);
+    this.lightbarSpillLight.position.set(0, 0.45, 0.6);
+    this.scene.add(this.lightbarSpillLight);
+
+    // 6. Breathing Ambient Haptic Glow
     this.accentPointLight = new THREE.PointLight(0x8B5CF6, 4.8, 14, 1.2);
     this.accentPointLight.position.set(0, 0.4, 2.8);
     this.scene.add(this.accentPointLight);
   }
 
   buildObjects() {
-    this.controllerGroup = this.createDualSenseController();
+    this.controllerGroup = this.createExactPS5DualSense();
     this.playIconGroup = this.createExtrudedPlayIcon();
     this.ringsGroup = this.createHolographicGimbalRings();
     this.relicsGroup = this.createQuantumRelics();
@@ -171,207 +178,409 @@ export class HeroScene {
   }
 
   /**
-   * Procedural Sculpted DualSense PS5 Controller
-   * Authentic two-tone design with ceramic white shell, midnight inner chassis,
-   * curved touchpad LED lightbar, tactile thumbsticks, and PlayStation action buttons.
+   * Exact Procedural PlayStation 5 DualSense Controller
+   * Recreates the genuine two-tone geometry, sculpted ergonomic wing handles,
+   * black inner boomerang core, touchpad with 3-sided glowing lightbar,
+   * symmetrical thumbsticks with concave thumb cups, clear PlayStation action buttons
+   * with floating colored glyphs, directional D-Pad, L1/R1 bumpers, and L2/R2 triggers.
    */
-  createDualSenseController() {
+  createExactPS5DualSense() {
     const group = new THREE.Group();
 
-    // High Quality PBR Materials
-    const whiteShellMat = new THREE.MeshStandardMaterial({
+    // -------------------------------------------------------------
+    // 1. Materials
+    // -------------------------------------------------------------
+    // Ceramic White Outer Shell with Clearcoat
+    const ps5WhiteMat = new THREE.MeshPhysicalMaterial({
       color: 0xF8FAFC,
-      roughness: 0.22,
-      metalness: 0.12
+      roughness: 0.16,
+      metalness: 0.05,
+      clearcoat: 0.9,
+      clearcoatRoughness: 0.12,
+      reflectivity: 0.6
     });
 
-    const blackChassisMat = new THREE.MeshStandardMaterial({
+    // Matte Midnight Inner Chassis
+    const ps5BlackChassisMat = new THREE.MeshStandardMaterial({
       color: 0x090B10,
-      roughness: 0.52,
-      metalness: 0.22
+      roughness: 0.6,
+      metalness: 0.15
     });
 
+    // Satin Touchpad Plate
+    const touchpadMat = new THREE.MeshStandardMaterial({
+      color: 0x12151D,
+      roughness: 0.45,
+      metalness: 0.1
+    });
+
+    // Rubber Thumbstick Material
     const stickRubberMat = new THREE.MeshStandardMaterial({
-      color: 0x141822,
-      roughness: 0.75,
+      color: 0x111319,
+      roughness: 0.8,
       metalness: 0.05
     });
 
-    const metallicTriggerMat = new THREE.MeshStandardMaterial({
-      color: 0x1F2432,
-      roughness: 0.25,
+    // Metallic Trigger Material
+    const triggerMetallicMat = new THREE.MeshStandardMaterial({
+      color: 0x1C202C,
+      roughness: 0.22,
       metalness: 0.85
     });
 
-    // Glowing Neon Materials
-    const neonPurpleMat = new THREE.MeshStandardMaterial({
-      color: 0x8B5CF6,
-      emissive: 0x8B5CF6,
-      emissiveIntensity: 2.8,
-      roughness: 0.15
+    // Acrylic Clear Button Material
+    const crystalButtonMat = new THREE.MeshPhysicalMaterial({
+      color: 0xE2E8F0,
+      roughness: 0.08,
+      transmission: 0.7,
+      thickness: 0.15,
+      transparent: true,
+      opacity: 0.85,
+      clearcoat: 1.0
     });
 
-    const neonCyanMat = new THREE.MeshStandardMaterial({
-      color: 0x22D3EE,
-      emissive: 0x22D3EE,
-      emissiveIntensity: 2.5,
-      roughness: 0.15
+    // Dynamic LED Lightbar Emissive Material
+    this.lightbarMat = new THREE.MeshBasicMaterial({
+      color: 0x8B5CF6
     });
 
-    // 1. Center Bridge Chassis
-    const bridgeGeo = new THREE.BoxGeometry(1.42, 0.92, 0.46, 4, 4, 4);
-    const bridge = new THREE.Mesh(bridgeGeo, whiteShellMat);
-    bridge.position.set(0, 0.05, 0);
+    // -------------------------------------------------------------
+    // 2. White Ergonomic Outer Shell & Side Wing Handles
+    // -------------------------------------------------------------
+    // Center Top Bridge Chassis
+    const bridgeGeo = new THREE.BoxGeometry(1.5, 0.95, 0.44, 4, 4, 4);
+    const bridge = new THREE.Mesh(bridgeGeo, ps5WhiteMat);
+    bridge.position.set(0, 0.08, 0.02);
     group.add(bridge);
 
-    // 2. Ergonomic DualSense Handles (Flared outward)
-    const handleGeo = new THREE.CapsuleGeometry(0.26, 1.05, 16, 24);
+    // Left Handle Wing (Angled downward and slightly outward)
+    const handleGeo = new THREE.CapsuleGeometry(0.27, 1.1, 16, 24);
 
-    const leftHandle = new THREE.Mesh(handleGeo, whiteShellMat);
-    leftHandle.position.set(-0.84, -0.28, 0.02);
-    leftHandle.rotation.z = -Math.PI / 7.6;
-    leftHandle.rotation.x = 0.12;
+    const leftHandle = new THREE.Mesh(handleGeo, ps5WhiteMat);
+    leftHandle.position.set(-0.86, -0.28, 0.02);
+    leftHandle.rotation.z = -Math.PI / 7.5;
+    leftHandle.rotation.x = 0.14;
     group.add(leftHandle);
 
-    const rightHandle = new THREE.Mesh(handleGeo, whiteShellMat);
-    rightHandle.position.set(0.84, -0.28, 0.02);
-    rightHandle.rotation.z = Math.PI / 7.6;
-    rightHandle.rotation.x = 0.12;
+    // Right Handle Wing
+    const rightHandle = new THREE.Mesh(handleGeo, ps5WhiteMat);
+    rightHandle.position.set(0.86, -0.28, 0.02);
+    rightHandle.rotation.z = Math.PI / 7.5;
+    rightHandle.rotation.x = 0.14;
     group.add(rightHandle);
 
-    // 3. Black Inner Chassis & Under-Grip Core (Iconic Two-Tone Division)
-    const underCoreGeo = new THREE.CapsuleGeometry(0.24, 0.98, 12, 20);
-    const underCore = new THREE.Mesh(underCoreGeo, blackChassisMat);
+    // White Top Shoulder Arch (Connecting over the touchpad)
+    const shoulderArchGeo = new THREE.BoxGeometry(1.65, 0.18, 0.38);
+    const shoulderArch = new THREE.Mesh(shoulderArchGeo, ps5WhiteMat);
+    shoulderArch.position.set(0, 0.54, 0.05);
+    group.add(shoulderArch);
+
+    // -------------------------------------------------------------
+    // 3. Black Inner Chassis & "Boomerang" Under-Grip Insert
+    // -------------------------------------------------------------
+    // Lower center core bridging between the grips
+    const underCoreGeo = new THREE.CapsuleGeometry(0.25, 1.05, 12, 20);
+    const underCore = new THREE.Mesh(underCoreGeo, ps5BlackChassisMat);
     underCore.position.set(0, -0.34, 0.04);
     underCore.rotation.z = Math.PI / 2;
     group.add(underCore);
 
-    // 4. Center Touchpad Plate
-    const touchpadGeo = new THREE.BoxGeometry(0.74, 0.48, 0.08);
-    const touchpad = new THREE.Mesh(touchpadGeo, blackChassisMat);
-    touchpad.position.set(0, 0.19, 0.23);
+    // Left black grip under-insert
+    const leftInnerGrip = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.85, 12, 16), ps5BlackChassisMat);
+    leftInnerGrip.position.set(-0.62, -0.32, -0.02);
+    leftInnerGrip.rotation.z = -Math.PI / 8;
+    group.add(leftInnerGrip);
+
+    // Right black grip under-insert
+    const rightInnerGrip = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.85, 12, 16), ps5BlackChassisMat);
+    rightInnerGrip.position.set(0.62, -0.32, -0.02);
+    rightInnerGrip.rotation.z = Math.PI / 8;
+    group.add(rightInnerGrip);
+
+    // -------------------------------------------------------------
+    // 4. Satin Touchpad Plate & 3-Sided Glowing LED Lightbar
+    // -------------------------------------------------------------
+    // Touchpad (slightly trapezoidal shape)
+    const touchpadGeo = new THREE.BoxGeometry(0.78, 0.52, 0.08);
+    const touchpad = new THREE.Mesh(touchpadGeo, touchpadMat);
+    touchpad.position.set(0, 0.22, 0.23);
     group.add(touchpad);
 
-    // 5. Curved Dynamic LED Lightbar
-    const lightbarGeo = new THREE.BoxGeometry(0.82, 0.045, 0.04);
-    this.lightbar = new THREE.Mesh(lightbarGeo, neonPurpleMat);
-    this.lightbar.position.set(0, 0.44, 0.24);
-    group.add(this.lightbar);
+    // 3-Sided DualSense Lightbar Ribbon
+    // Top lightbar strip
+    const topBarGeo = new THREE.BoxGeometry(0.82, 0.04, 0.04);
+    this.topLightbar = new THREE.Mesh(topBarGeo, this.lightbarMat);
+    this.topLightbar.position.set(0, 0.49, 0.24);
+    group.add(this.topLightbar);
 
-    // Side lightbar wings
-    const sideLightGeo = new THREE.BoxGeometry(0.04, 0.36, 0.03);
-    const lSideLight = new THREE.Mesh(sideLightGeo, neonPurpleMat);
-    lSideLight.position.set(-0.41, 0.24, 0.23);
-    lSideLight.rotation.z = 0.1;
-    group.add(lSideLight);
-    this.leftSideLight = lSideLight;
+    // Left lightbar strip
+    const sideBarGeo = new THREE.BoxGeometry(0.04, 0.46, 0.035);
+    this.leftLightbar = new THREE.Mesh(sideBarGeo, this.lightbarMat);
+    this.leftLightbar.position.set(-0.41, 0.24, 0.235);
+    this.leftLightbar.rotation.z = 0.08;
+    group.add(this.leftLightbar);
 
-    const rSideLight = new THREE.Mesh(sideLightGeo, neonPurpleMat);
-    rSideLight.position.set(0.41, 0.24, 0.23);
-    rSideLight.rotation.z = -0.1;
-    group.add(rSideLight);
-    this.rightSideLight = rSideLight;
+    // Right lightbar strip
+    this.rightLightbar = new THREE.Mesh(sideBarGeo, this.lightbarMat);
+    this.rightLightbar.position.set(0.41, 0.24, 0.235);
+    this.rightLightbar.rotation.z = -0.08;
+    group.add(this.rightLightbar);
 
-    // 6. Dual Analog Thumbsticks with Base Wells & Tactile Rings
-    const stickWellGeo = new THREE.CylinderGeometry(0.22, 0.24, 0.06, 24);
-    const stickStemGeo = new THREE.CylinderGeometry(0.12, 0.14, 0.16, 24);
-    const stickPadGeo = new THREE.CylinderGeometry(0.21, 0.18, 0.07, 24);
-    const stickAccentRingGeo = new THREE.TorusGeometry(0.21, 0.015, 12, 32);
+    // -------------------------------------------------------------
+    // 5. Symmetrical Analog Thumbsticks (Authentic DualSense Profile)
+    // -------------------------------------------------------------
+    // Lathe geometry creates the exact thumbstick curve: base dome, slender stem,
+    // concave thumb cup, raised grip ring, and subtle center dome!
+    const stickPoints = [
+      new THREE.Vector2(0, 0),
+      new THREE.Vector2(0.23, 0),
+      new THREE.Vector2(0.21, 0.07),
+      new THREE.Vector2(0.12, 0.13),
+      new THREE.Vector2(0.12, 0.26),
+      new THREE.Vector2(0.23, 0.30),
+      new THREE.Vector2(0.22, 0.36),
+      new THREE.Vector2(0.17, 0.35),
+      new THREE.Vector2(0.08, 0.33),
+      new THREE.Vector2(0, 0.335)
+    ];
+    const stickGeo = new THREE.LatheGeometry(stickPoints, 32);
+    const stickWellGeo = new THREE.CylinderGeometry(0.25, 0.27, 0.06, 32);
 
-    // Left Analog Stick
-    const leftWell = new THREE.Mesh(stickWellGeo, blackChassisMat);
-    leftWell.position.set(-0.36, -0.22, 0.24);
-    leftWell.rotation.x = 0.16;
-
-    const leftStem = new THREE.Mesh(stickStemGeo, blackChassisMat);
-    leftStem.position.set(0, 0.08, 0);
-
-    const leftPad = new THREE.Mesh(stickPadGeo, stickRubberMat);
-    leftPad.position.set(0, 0.12, 0);
-
-    const leftRing = new THREE.Mesh(stickAccentRingGeo, neonCyanMat);
-    leftRing.position.set(0, 0.12, 0);
-    leftRing.rotation.x = Math.PI / 2;
-
-    leftWell.add(leftStem);
-    leftWell.add(leftPad);
-    leftWell.add(leftRing);
+    // Left Thumbstick Housing Well
+    const leftWell = new THREE.Mesh(stickWellGeo, ps5BlackChassisMat);
+    leftWell.position.set(-0.36, -0.21, 0.22);
+    leftWell.rotation.x = 0.18;
     group.add(leftWell);
 
-    // Right Analog Stick
-    const rightWell = new THREE.Mesh(stickWellGeo, blackChassisMat);
-    rightWell.position.set(0.36, -0.22, 0.24);
-    rightWell.rotation.x = 0.16;
+    // Left Stick Body
+    this.leftStick = new THREE.Mesh(stickGeo, stickRubberMat);
+    this.leftStick.position.set(-0.36, -0.21, 0.22);
+    this.leftStick.rotation.x = 0.18;
+    group.add(this.leftStick);
 
-    const rightStem = new THREE.Mesh(stickStemGeo, blackChassisMat);
-    rightStem.position.set(0, 0.08, 0);
+    // Left Stick Glowing Base Accent Ring
+    const stickRingGeo = new THREE.TorusGeometry(0.235, 0.014, 12, 32);
+    const leftStickRing = new THREE.Mesh(stickRingGeo, new THREE.MeshBasicMaterial({ color: 0x22D3EE }));
+    leftStickRing.position.set(-0.36, -0.21, 0.25);
+    leftStickRing.rotation.x = 0.18;
+    group.add(leftStickRing);
 
-    const rightPad = new THREE.Mesh(stickPadGeo, stickRubberMat);
-    rightPad.position.set(0, 0.12, 0);
-
-    const rightRing = new THREE.Mesh(stickAccentRingGeo, neonPurpleMat);
-    rightRing.position.set(0, 0.12, 0);
-    rightRing.rotation.x = Math.PI / 2;
-
-    rightWell.add(rightStem);
-    rightWell.add(rightPad);
-    rightWell.add(rightRing);
+    // Right Thumbstick Housing Well
+    const rightWell = new THREE.Mesh(stickWellGeo, ps5BlackChassisMat);
+    rightWell.position.set(0.36, -0.21, 0.22);
+    rightWell.rotation.x = 0.18;
     group.add(rightWell);
 
-    // 7. Directional D-Pad (Left Wing)
-    const dpadHoriz = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.14, 0.07), blackChassisMat);
-    dpadHoriz.position.set(-0.78, 0.16, 0.24);
-    const dpadVert = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.44, 0.07), blackChassisMat);
-    dpadVert.position.set(-0.78, 0.16, 0.24);
-    group.add(dpadHoriz);
-    group.add(dpadVert);
+    // Right Stick Body
+    this.rightStick = new THREE.Mesh(stickGeo, stickRubberMat);
+    this.rightStick.position.set(0.36, -0.21, 0.22);
+    this.rightStick.rotation.x = 0.18;
+    group.add(this.rightStick);
 
-    // 8. PlayStation Face Buttons (Triangle, Circle, Cross, Square)
-    const btnGeo = new THREE.CylinderGeometry(0.065, 0.065, 0.06, 18);
-    const actionButtons = [
-      { x: 0.78, y: 0.30, color: 0x22D3EE }, // Triangle (Top - Cyan)
-      { x: 0.92, y: 0.16, color: 0xFF2E5B }, // Circle (Right - Red/Magenta)
-      { x: 0.78, y: 0.02, color: 0x38BDF8 }, // Cross (Bottom - Blue)
-      { x: 0.64, y: 0.16, color: 0xC084FC }  // Square (Left - Purple)
+    // Right Stick Glowing Base Accent Ring
+    const rightStickRing = new THREE.Mesh(stickRingGeo, new THREE.MeshBasicMaterial({ color: 0x8B5CF6 }));
+    rightStickRing.position.set(0.36, -0.21, 0.25);
+    rightStickRing.rotation.x = 0.18;
+    group.add(rightStickRing);
+
+    // -------------------------------------------------------------
+    // 6. PlayStation Face Buttons (Triangle, Circle, Cross, Square)
+    // Clear crystal buttons with embedded neon glowing symbols!
+    // -------------------------------------------------------------
+    const buttonBaseGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.07, 24);
+    const buttonPlacements = [
+      // 1. Triangle △ (Top - Neon Cyan)
+      {
+        x: 0.82, y: 0.32, color: 0x22D3EE,
+        createGlyph: () => {
+          const g = new THREE.Mesh(new THREE.TorusGeometry(0.042, 0.009, 8, 3), new THREE.MeshBasicMaterial({ color: 0x22D3EE }));
+          g.rotation.z = Math.PI / 2;
+          return g;
+        }
+      },
+      // 2. Circle ○ (Right - Neon Red/Magenta)
+      {
+        x: 0.98, y: 0.16, color: 0xFF2E5B,
+        createGlyph: () => new THREE.Mesh(new THREE.TorusGeometry(0.042, 0.009, 12, 24), new THREE.MeshBasicMaterial({ color: 0xFF2E5B }))
+      },
+      // 3. Cross ✕ (Bottom - Electric Blue)
+      {
+        x: 0.82, y: 0.0, color: 0x38BDF8,
+        createGlyph: () => {
+          const crossGroup = new THREE.Group();
+          const barMat = new THREE.MeshBasicMaterial({ color: 0x38BDF8 });
+          const bar1 = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.018, 0.01), barMat);
+          bar1.rotation.z = Math.PI / 4;
+          const bar2 = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.018, 0.01), barMat);
+          bar2.rotation.z = -Math.PI / 4;
+          crossGroup.add(bar1);
+          crossGroup.add(bar2);
+          return crossGroup;
+        }
+      },
+      // 4. Square □ (Left - Neon Purple/Pink)
+      {
+        x: 0.66, y: 0.16, color: 0xC084FC,
+        createGlyph: () => {
+          const g = new THREE.Mesh(new THREE.TorusGeometry(0.042, 0.009, 8, 4), new THREE.MeshBasicMaterial({ color: 0xC084FC }));
+          g.rotation.z = Math.PI / 4;
+          return g;
+        }
+      }
     ];
 
-    actionButtons.forEach(btn => {
-      const mat = new THREE.MeshStandardMaterial({
-        color: btn.color,
-        emissive: btn.color,
-        emissiveIntensity: 2.2,
-        roughness: 0.2
-      });
-      const mesh = new THREE.Mesh(btnGeo, mat);
-      mesh.position.set(btn.x, btn.y, 0.24);
-      mesh.rotation.x = Math.PI / 2;
-      group.add(mesh);
+    buttonPlacements.forEach(btn => {
+      // Clear crystal button cylinder
+      const btnMesh = new THREE.Mesh(buttonBaseGeo, crystalButtonMat);
+      btnMesh.position.set(btn.x, btn.y, 0.25);
+      btnMesh.rotation.x = Math.PI / 2;
+      group.add(btnMesh);
+
+      // Embedded glowing glyph
+      const glyph = btn.createGlyph();
+      glyph.position.set(btn.x, btn.y, 0.285);
+      group.add(glyph);
     });
 
-    // 9. Shoulder Bumpers (L1/R1) & Triggers (L2/R2)
-    const bumperGeo = new THREE.BoxGeometry(0.34, 0.14, 0.22);
-    const lBumper = new THREE.Mesh(bumperGeo, blackChassisMat);
-    lBumper.position.set(-0.68, 0.54, -0.05);
-    const rBumper = new THREE.Mesh(bumperGeo, blackChassisMat);
-    rBumper.position.set(0.68, 0.54, -0.05);
-    group.add(lBumper);
-    group.add(rBumper);
+    // -------------------------------------------------------------
+    // 7. Symmetrical Directional Pad (D-Pad on Left Wing)
+    // -------------------------------------------------------------
+    const dpadArmGeo = new THREE.BoxGeometry(0.14, 0.19, 0.08);
+    const dpadPlacements = [
+      { x: -0.82, y: 0.26, rot: 0 },             // Up
+      { x: -0.82, y: 0.06, rot: Math.PI },       // Down
+      { x: -0.92, y: 0.16, rot: Math.PI / 2 },   // Left
+      { x: -0.72, y: 0.16, rot: -Math.PI / 2 }   // Right
+    ];
 
-    const triggerGeo = new THREE.BoxGeometry(0.28, 0.2, 0.18);
-    const lTrigger = new THREE.Mesh(triggerGeo, metallicTriggerMat);
-    lTrigger.position.set(-0.68, 0.56, -0.22);
-    lTrigger.rotation.x = -0.2;
-    const rTrigger = new THREE.Mesh(triggerGeo, metallicTriggerMat);
-    rTrigger.position.set(0.68, 0.56, -0.22);
-    rTrigger.rotation.x = -0.2;
-    group.add(lTrigger);
-    group.add(rTrigger);
+    dpadPlacements.forEach(p => {
+      const arm = new THREE.Mesh(dpadArmGeo, ps5BlackChassisMat);
+      arm.position.set(p.x, p.y, 0.25);
+      arm.rotation.z = p.rot;
+      group.add(arm);
 
-    // 10. PlayStation Emblem & Mic Accent
-    const psEmblemGeo = new THREE.BoxGeometry(0.12, 0.12, 0.02);
-    const psEmblem = new THREE.Mesh(psEmblemGeo, neonCyanMat);
-    psEmblem.position.set(0, -0.06, 0.25);
-    group.add(psEmblem);
+      // Directional arrow indentation indicator
+      const arrowIndicator = new THREE.Mesh(
+        new THREE.ConeGeometry(0.025, 0.04, 3),
+        new THREE.MeshBasicMaterial({ color: 0x475569 })
+      );
+      arrowIndicator.position.set(p.x, p.y + (p.rot === 0 ? 0.04 : (p.rot === Math.PI ? -0.04 : 0)), 0.29);
+      if (p.rot === Math.PI) arrowIndicator.rotation.z = Math.PI;
+      if (p.rot === Math.PI / 2) {
+        arrowIndicator.position.set(p.x - 0.04, p.y, 0.29);
+        arrowIndicator.rotation.z = Math.PI / 2;
+      }
+      if (p.rot === -Math.PI / 2) {
+        arrowIndicator.position.set(p.x + 0.04, p.y, 0.29);
+        arrowIndicator.rotation.z = -Math.PI / 2;
+      }
+      group.add(arrowIndicator);
+    });
+
+    // -------------------------------------------------------------
+    // 8. Create & Options Buttons (Pill Buttons next to Touchpad)
+    // -------------------------------------------------------------
+    const smallPillGeo = new THREE.CapsuleGeometry(0.035, 0.11, 8, 12);
+
+    // Create (Share) Button
+    const createBtn = new THREE.Mesh(smallPillGeo, ps5BlackChassisMat);
+    createBtn.position.set(-0.52, 0.44, 0.23);
+    createBtn.rotation.z = -0.4;
+    group.add(createBtn);
+
+    // Options Button
+    const optionsBtn = new THREE.Mesh(smallPillGeo, ps5BlackChassisMat);
+    optionsBtn.position.set(0.52, 0.44, 0.23);
+    optionsBtn.rotation.z = 0.4;
+    group.add(optionsBtn);
+
+    // -------------------------------------------------------------
+    // 9. PlayStation Home Button, Mute Button & Speaker Grille
+    // -------------------------------------------------------------
+    // PS Logo Button (between the thumbsticks)
+    const psBtnGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.04, 24);
+    const psBtn = new THREE.Mesh(psBtnGeo, ps5BlackChassisMat);
+    psBtn.position.set(0, -0.04, 0.24);
+    psBtn.rotation.x = Math.PI / 2;
+    group.add(psBtn);
+
+    // PS Emblem Relief
+    const psLogoShape = new THREE.Mesh(
+      new THREE.BoxGeometry(0.08, 0.05, 0.015),
+      new THREE.MeshBasicMaterial({ color: 0x94A3B8 })
+    );
+    psLogoShape.position.set(0, -0.04, 0.265);
+    group.add(psLogoShape);
+
+    // Microphone Mute Button (horizontal pill below PS button)
+    const muteBtnGeo = new THREE.CapsuleGeometry(0.025, 0.1, 8, 12);
+    const muteBtn = new THREE.Mesh(muteBtnGeo, ps5BlackChassisMat);
+    muteBtn.position.set(0, -0.16, 0.23);
+    muteBtn.rotation.z = Math.PI / 2;
+    group.add(muteBtn);
+
+    // Mute LED Indicator (amber/cyan)
+    this.muteLed = new THREE.Mesh(
+      new THREE.BoxGeometry(0.04, 0.015, 0.01),
+      new THREE.MeshBasicMaterial({ color: 0xF59E0B })
+    );
+    this.muteLed.position.set(0, -0.16, 0.245);
+    group.add(this.muteLed);
+
+    // Speaker Grille Dot Array (between touchpad and PS button)
+    for (let row = 0; row < 3; row++) {
+      for (let col = -2; col <= 2; col++) {
+        const dot = new THREE.Mesh(
+          new THREE.CircleGeometry(0.008, 8),
+          new THREE.MeshBasicMaterial({ color: 0x1E293B })
+        );
+        dot.position.set(col * 0.035, 0.04 + row * 0.03, 0.245);
+        group.add(dot);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 10. Shoulder Bumpers (L1/R1) and Adaptive Triggers (L2/R2)
+    // -------------------------------------------------------------
+    // L1 Bumper
+    const bumperGeo = new THREE.BoxGeometry(0.36, 0.14, 0.24);
+    const l1Bumper = new THREE.Mesh(bumperGeo, ps5BlackChassisMat);
+    l1Bumper.position.set(-0.7, 0.58, -0.04);
+    l1Bumper.rotation.y = 0.12;
+    group.add(l1Bumper);
+
+    // R1 Bumper
+    const r1Bumper = new THREE.Mesh(bumperGeo, ps5BlackChassisMat);
+    r1Bumper.position.set(0.7, 0.58, -0.04);
+    r1Bumper.rotation.y = -0.12;
+    group.add(r1Bumper);
+
+    // L2 Adaptive Trigger (Contoured outward trigger with pivot)
+    const triggerGeo = new THREE.BoxGeometry(0.28, 0.22, 0.22);
+    const l2Trigger = new THREE.Mesh(triggerGeo, triggerMetallicMat);
+    l2Trigger.position.set(-0.7, 0.62, -0.22);
+    l2Trigger.rotation.x = -0.28;
+    l2Trigger.rotation.y = 0.1;
+    group.add(l2Trigger);
+
+    // R2 Adaptive Trigger
+    const r2Trigger = new THREE.Mesh(triggerGeo, triggerMetallicMat);
+    r2Trigger.position.set(0.7, 0.62, -0.22);
+    r2Trigger.rotation.x = -0.28;
+    r2Trigger.rotation.y = -0.1;
+    group.add(r2Trigger);
+
+    // USB-C Charging Port on Top Edge
+    const portGeo = new THREE.BoxGeometry(0.12, 0.05, 0.06);
+    const usbPort = new THREE.Mesh(portGeo, ps5BlackChassisMat);
+    usbPort.position.set(0, 0.64, -0.08);
+    group.add(usbPort);
+
+    // 3.5mm Headphone Jack on Bottom Chin
+    const jackGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.08, 16);
+    const audioJack = new THREE.Mesh(jackGeo, ps5BlackChassisMat);
+    audioJack.position.set(0, -0.46, 0.04);
+    group.add(audioJack);
 
     return group;
   }
@@ -427,7 +636,7 @@ export class HeroScene {
       roughness: 0.3,
       metalness: 0.8,
       transparent: true,
-      opacity: 0.65
+      opacity: 0.6
     });
 
     const ringMatCyan = new THREE.MeshStandardMaterial({
@@ -437,7 +646,7 @@ export class HeroScene {
       roughness: 0.3,
       metalness: 0.8,
       transparent: true,
-      opacity: 0.55
+      opacity: 0.5
     });
 
     // Primary Gimbal Ring
@@ -746,6 +955,16 @@ export class HeroScene {
         this.controllerGroup.position.y += floatY * 0.035;
         this.controllerGroup.rotation.y += floatRotY * 0.018;
         this.controllerGroup.rotation.x += floatRotX * 0.015;
+
+        // Subtle idle thumbstick micro-movements
+        if (this.leftStick) {
+          this.leftStick.rotation.z = Math.sin(elapsedTime * 2.0) * 0.05;
+          this.leftStick.rotation.x = 0.18 + Math.cos(elapsedTime * 1.7) * 0.04;
+        }
+        if (this.rightStick) {
+          this.rightStick.rotation.z = Math.cos(elapsedTime * 1.8) * 0.04;
+          this.rightStick.rotation.x = 0.18 + Math.sin(elapsedTime * 2.2) * 0.05;
+        }
       }
     }
 
@@ -760,7 +979,7 @@ export class HeroScene {
       }
     }
 
-    // 6. Accent Dynamic Neon Lighting & Breathing Pulse
+    // 6. Accent Dynamic Neon Lighting & Lightbar Pulse
     if (this.accentPointLight) {
       this.accentPointLight.color.lerp(target.lightColor, 0.06);
       if (motionSpeed > 0) {
@@ -769,17 +988,16 @@ export class HeroScene {
       }
     }
 
-    if (this.lightbar) {
-      this.lightbar.material.color.lerp(target.lightColor, 0.06);
-      this.lightbar.material.emissive.lerp(target.lightColor, 0.06);
-      if (this.leftSideLight) {
-        this.leftSideLight.material.color.lerp(target.lightColor, 0.06);
-        this.leftSideLight.material.emissive.lerp(target.lightColor, 0.06);
+    if (this.lightbarSpillLight) {
+      this.lightbarSpillLight.color.lerp(target.lightColor, 0.06);
+      if (motionSpeed > 0) {
+        const pulse = 1.0 + Math.sin(elapsedTime * 2.6) * 0.3;
+        this.lightbarSpillLight.intensity = 3.2 * pulse;
       }
-      if (this.rightSideLight) {
-        this.rightSideLight.material.color.lerp(target.lightColor, 0.06);
-        this.rightSideLight.material.emissive.lerp(target.lightColor, 0.06);
-      }
+    }
+
+    if (this.lightbarMat) {
+      this.lightbarMat.color.lerp(target.lightColor, 0.06);
     }
 
     // 7. Holographic Gimbal Rings & Orbiting Energy Nodes
