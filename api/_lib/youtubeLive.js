@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getOwnerAccessToken } from './youtubeShorts.js';
+import { youtubeGet, getYoutubeApiKeys } from './youtubeClient.js';
 
 /**
  * YouTube Live Stream Discovery Service
@@ -138,16 +139,15 @@ async function discoverViaOwnerOAuth(ownerToken) {
 /**
  * Quota-aware API Key live discovery fallback (search.list + videos.list)
  */
-async function discoverViaApiKeyLive(apiKey) {
+async function discoverViaApiKeyLive() {
   // Step 1: Query active live streams for the channel
-  const searchRes = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+  const searchRes = await youtubeGet('https://www.googleapis.com/youtube/v3/search', {
     params: {
       part: 'snippet',
       channelId: CHANNEL_ID,
       type: 'video',
       eventType: 'live',
-      maxResults: 5,
-      key: apiKey
+      maxResults: 5
     },
     timeout: 7000
   });
@@ -159,11 +159,10 @@ async function discoverViaApiKeyLive(apiKey) {
   if (videoIds.length === 0) return null;
 
   // Step 2: Verify video status, liveBroadcastContent, and liveStreamingDetails
-  const videosRes = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
+  const videosRes = await youtubeGet('https://www.googleapis.com/youtube/v3/videos', {
     params: {
       part: 'snippet,status,contentDetails,liveStreamingDetails',
-      id: videoIds.join(','),
-      key: apiKey
+      id: videoIds.join(',')
     },
     timeout: 7000
   });
@@ -210,7 +209,7 @@ async function discoverViaApiKeyLive(apiKey) {
 /**
  * Discovers the latest completed public livestream to serve as "Latest Live Replay"
  */
-async function discoverLatestCompletedStream(apiKey) {
+async function discoverLatestCompletedStream() {
   const now = Date.now();
   // Return cached replay if still fresh (10 minutes)
   if (replayCache.data && (now - replayCache.timestamp < REPLAY_CACHE_TTL_MS)) {
@@ -220,20 +219,20 @@ async function discoverLatestCompletedStream(apiKey) {
     };
   }
 
-  if (!apiKey) {
+  const keys = getYoutubeApiKeys();
+  if (keys.length === 0) {
     return FALLBACK_LIVE_DATA;
   }
 
   try {
-    const searchRes = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+    const searchRes = await youtubeGet('https://www.googleapis.com/youtube/v3/search', {
       params: {
         part: 'snippet',
         channelId: CHANNEL_ID,
         type: 'video',
         eventType: 'completed',
         order: 'date',
-        maxResults: 5,
-        key: apiKey
+        maxResults: 5
       },
       timeout: 7000
     });
@@ -245,11 +244,10 @@ async function discoverLatestCompletedStream(apiKey) {
       return replayCache.data || FALLBACK_LIVE_DATA;
     }
 
-    const videosRes = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
+    const videosRes = await youtubeGet('https://www.googleapis.com/youtube/v3/videos', {
       params: {
         part: 'snippet,status,contentDetails,liveStreamingDetails',
-        id: videoIds.join(','),
-        key: apiKey
+        id: videoIds.join(',')
       },
       timeout: 7000
     });
@@ -333,7 +331,7 @@ export async function getLiveStreamData() {
 
   inFlightLivePromise = (async () => {
     try {
-      const apiKey = process.env.YOUTUBE_API_KEY;
+      const keys = getYoutubeApiKeys();
       const ownerToken = await getOwnerAccessToken();
 
       let activeBroadcast = null;
@@ -348,9 +346,9 @@ export async function getLiveStreamData() {
       }
 
       // Tier 2: API Key search fallback (100 units quota)
-      if (!activeBroadcast && apiKey) {
+      if (!activeBroadcast && keys.length > 0) {
         try {
-          activeBroadcast = await discoverViaApiKeyLive(apiKey);
+          activeBroadcast = await discoverViaApiKeyLive();
         } catch (apiErr) {
           console.warn('[YouTube Live] API Key live search failed:', apiErr.response?.data?.error?.message || apiErr.message);
         }
@@ -371,7 +369,7 @@ export async function getLiveStreamData() {
           // If we just transitioned from live to offline, invalidate replayCache
           replayCache = { timestamp: 0, data: null };
         }
-        const completed = await discoverLatestCompletedStream(apiKey);
+        const completed = await discoverLatestCompletedStream();
         finalResult = {
           ...completed,
           lastUpdated: new Date().toISOString()

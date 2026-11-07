@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { youtubeGet, getYoutubeApiKeys } from './youtubeClient.js';
 
 /**
  * YouTube Playlists Service
@@ -80,15 +81,14 @@ export function categorizePlaylist(title = '') {
   return 'Gaming & Vlogs';
 }
 
-export async function fetchDiscoveredPlaylists(apiKey) {
-  const res = await axios.get('https://www.googleapis.com/youtube/v3/playlists', {
+export async function fetchDiscoveredPlaylists() {
+  const res = await youtubeGet('https://www.googleapis.com/youtube/v3/playlists', {
     params: {
       part: 'snippet,contentDetails',
       channelId: CHANNEL_ID,
-      maxResults: 25,
-      key: apiKey
+      maxResults: 25
     },
-    timeout: 7000
+    timeout: 8000
   });
 
   const rawItems = res.data?.items || [];
@@ -121,7 +121,7 @@ export async function fetchDiscoveredPlaylists(apiKey) {
 
 export async function getPlaylistsFeed() {
   const now = Date.now();
-  const apiKey = process.env.YOUTUBE_API_KEY;
+  const keys = getYoutubeApiKeys();
 
   if (memoryCache.data && (now - memoryCache.timestamp < CACHE_TTL_MS)) {
     return {
@@ -133,7 +133,7 @@ export async function getPlaylistsFeed() {
     };
   }
 
-  if (!apiKey) {
+  if (keys.length === 0) {
     return {
       success: true,
       cached: false,
@@ -145,7 +145,7 @@ export async function getPlaylistsFeed() {
   }
 
   try {
-    const items = await fetchDiscoveredPlaylists(apiKey);
+    const items = await fetchDiscoveredPlaylists();
     const feedData = {
       items,
       lastUpdated: new Date().toISOString()

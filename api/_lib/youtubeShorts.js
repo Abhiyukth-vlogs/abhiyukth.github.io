@@ -1,6 +1,7 @@
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
+import { youtubeGet, getYoutubeApiKeys } from './youtubeClient.js';
 
 /**
  * YouTube Shorts Service
@@ -469,13 +470,12 @@ export async function getOwnerAccessToken() {
 /**
  * Fetch and discover Shorts from YouTube API with multi-layer verification
  */
-export async function fetchDiscoveredShorts(apiKey) {
+export async function fetchDiscoveredShorts() {
   // Step 1: Resolve Uploads Playlist
-  const chanRes = await axios.get('https://www.googleapis.com/youtube/v3/channels', {
+  const chanRes = await youtubeGet('https://www.googleapis.com/youtube/v3/channels', {
     params: {
       part: 'contentDetails,snippet,statistics',
-      id: CHANNEL_ID,
-      key: apiKey
+      id: CHANNEL_ID
     },
     timeout: 6000
   });
@@ -491,12 +491,11 @@ export async function fetchDiscoveredShorts(apiKey) {
   }
 
   // Step 2: Fetch recent uploads from playlist (up to 50 items)
-  const playlistRes = await axios.get('https://www.googleapis.com/youtube/v3/playlistItems', {
+  const playlistRes = await youtubeGet('https://www.googleapis.com/youtube/v3/playlistItems', {
     params: {
       part: 'snippet,contentDetails',
       playlistId: uploadsPlaylistId,
-      maxResults: 50,
-      key: apiKey
+      maxResults: 50
     },
     timeout: 6000
   });
@@ -516,13 +515,12 @@ export async function fetchDiscoveredShorts(apiKey) {
   // Step 3: Batch fetch video details
   const videoParams = {
     part: ownerToken ? 'snippet,contentDetails,statistics,status,fileDetails' : 'snippet,contentDetails,statistics,status',
-    id: videoIds.join(','),
-    key: apiKey
+    id: videoIds.join(',')
   };
 
   const headers = ownerToken ? { Authorization: `Bearer ${ownerToken}` } : {};
 
-  const videosRes = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
+  const videosRes = await youtubeGet('https://www.googleapis.com/youtube/v3/videos', {
     params: videoParams,
     headers,
     timeout: 8000
@@ -663,7 +661,7 @@ export async function fetchDiscoveredShorts(apiKey) {
  */
 export async function getShortsFeed() {
   const now = Date.now();
-  const apiKey = process.env.YOUTUBE_API_KEY;
+  const keys = getYoutubeApiKeys();
 
   // 1. Return fresh cached data if valid (< 5 minutes old)
   if (memoryCache.data && (now - memoryCache.timestamp < CACHE_TTL_MS)) {
@@ -679,7 +677,7 @@ export async function getShortsFeed() {
   }
 
   // 2. If no API key configured, return verified curated snapshot
-  if (!apiKey) {
+  if (keys.length === 0) {
     console.warn('[YouTube Shorts] YOUTUBE_API_KEY not configured, serving verified baseline');
     const snapshotData = {
       items: FALLBACK_SHORTS,
@@ -702,7 +700,7 @@ export async function getShortsFeed() {
 
   // 3. Query YouTube Data API
   try {
-    const items = await fetchDiscoveredShorts(apiKey);
+    const items = await fetchDiscoveredShorts();
     const feedData = {
       items,
       lastUpdated: new Date().toISOString()

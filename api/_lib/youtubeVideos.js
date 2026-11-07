@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { youtubeGet, getYoutubeApiKeys } from './youtubeClient.js';
 import { parseDuration, formatViews } from './youtubeShorts.js';
 
 /**
@@ -209,12 +210,11 @@ export function formatTimeAgo(publishedAt) {
   }
 }
 
-export async function fetchDiscoveredVideos(apiKey) {
-  const chanRes = await axios.get('https://www.googleapis.com/youtube/v3/channels', {
+export async function fetchDiscoveredVideos() {
+  const chanRes = await youtubeGet('https://www.googleapis.com/youtube/v3/channels', {
     params: {
       part: 'contentDetails',
-      id: CHANNEL_ID,
-      key: apiKey
+      id: CHANNEL_ID
     },
     timeout: 6000
   });
@@ -222,12 +222,11 @@ export async function fetchDiscoveredVideos(apiKey) {
   const uploadsPlaylistId = chanRes.data?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
   if (!uploadsPlaylistId) return FALLBACK_VIDEOS;
 
-  const playlistRes = await axios.get('https://www.googleapis.com/youtube/v3/playlistItems', {
+  const playlistRes = await youtubeGet('https://www.googleapis.com/youtube/v3/playlistItems', {
     params: {
       part: 'snippet,contentDetails',
       playlistId: uploadsPlaylistId,
-      maxResults: 50,
-      key: apiKey
+      maxResults: 50
     },
     timeout: 6000
   });
@@ -237,11 +236,10 @@ export async function fetchDiscoveredVideos(apiKey) {
 
   const videoIds = playlistItems.map(item => item.contentDetails?.videoId).filter(Boolean);
 
-  const videosRes = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
+  const videosRes = await youtubeGet('https://www.googleapis.com/youtube/v3/videos', {
     params: {
       part: 'snippet,contentDetails,statistics,status',
-      id: videoIds.join(','),
-      key: apiKey
+      id: videoIds.join(',')
     },
     timeout: 8000
   });
@@ -300,7 +298,7 @@ export async function fetchDiscoveredVideos(apiKey) {
 
 export async function getVideosFeed() {
   const now = Date.now();
-  const apiKey = process.env.YOUTUBE_API_KEY;
+  const keys = getYoutubeApiKeys();
 
   if (memoryCache.data && (now - memoryCache.timestamp < CACHE_TTL_MS)) {
     return {
@@ -312,7 +310,7 @@ export async function getVideosFeed() {
     };
   }
 
-  if (!apiKey) {
+  if (keys.length === 0) {
     return {
       success: true,
       cached: false,
@@ -324,7 +322,7 @@ export async function getVideosFeed() {
   }
 
   try {
-    const items = await fetchDiscoveredVideos(apiKey);
+    const items = await fetchDiscoveredVideos();
     const feedData = {
       items,
       lastUpdated: new Date().toISOString()

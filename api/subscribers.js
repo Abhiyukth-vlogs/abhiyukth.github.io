@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { youtubeGet, getYoutubeApiKeys } from './_lib/youtubeClient.js';
 
 // Vercel Serverless Function Handler
 export default async function handler(req, res) {
@@ -14,9 +15,9 @@ export default async function handler(req, res) {
   }
 
   const CHANNEL_ID = process.env.YOUTUBE_CHANNEL_ID || 'UCuG7-r1F3b2RzGoRFIe0MnQ';
-  const API_KEY = process.env.YOUTUBE_API_KEY;
+  const keys = getYoutubeApiKeys();
 
-  if (!API_KEY) {
+  if (keys.length === 0) {
     return res.status(200).json({
       success: false,
       message: 'YOUTUBE_API_KEY not configured in environment',
@@ -29,13 +30,12 @@ export default async function handler(req, res) {
 
   try {
     const youtubeUrl = 'https://www.googleapis.com/youtube/v3/channels';
-    const response = await axios.get(youtubeUrl, {
+    const response = await youtubeGet(youtubeUrl, {
       params: {
         part: 'statistics,snippet',
-        id: CHANNEL_ID,
-        key: API_KEY
+        id: CHANNEL_ID
       },
-      timeout: 5000
+      timeout: 6000
     });
 
     const items = response.data?.items;

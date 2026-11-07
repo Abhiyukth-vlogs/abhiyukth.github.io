@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { youtubeGet, getYoutubeApiKeys } from './youtubeClient.js';
 
 /**
  * YouTube Featured Channels Service
@@ -264,12 +265,11 @@ function formatSubscribers(count, hidden) {
   return `${num} ${num === 1 ? 'subscriber' : 'subscribers'}`;
 }
 
-export async function fetchDiscoveredFeaturedChannels(apiKey) {
-  const sectionsRes = await axios.get('https://www.googleapis.com/youtube/v3/channelSections', {
+export async function fetchDiscoveredFeaturedChannels() {
+  const sectionsRes = await youtubeGet('https://www.googleapis.com/youtube/v3/channelSections', {
     params: {
       part: 'snippet,contentDetails',
-      channelId: CHANNEL_ID,
-      key: apiKey
+      channelId: CHANNEL_ID
     },
     timeout: 8000
   });
@@ -308,11 +308,10 @@ export async function fetchDiscoveredFeaturedChannels(apiKey) {
   for (let i = 0; i < idsArray.length; i += 50) {
     const chunk = idsArray.slice(i, i + 50);
     try {
-      const chRes = await axios.get('https://www.googleapis.com/youtube/v3/channels', {
+      const chRes = await youtubeGet('https://www.googleapis.com/youtube/v3/channels', {
         params: {
           part: 'snippet,statistics',
-          id: chunk.join(','),
-          key: apiKey
+          id: chunk.join(',')
         },
         timeout: 8000
       });
@@ -374,7 +373,7 @@ export async function fetchDiscoveredFeaturedChannels(apiKey) {
 
 export async function getFeaturedChannelsFeed() {
   const now = Date.now();
-  const apiKey = process.env.YOUTUBE_API_KEY;
+  const keys = getYoutubeApiKeys();
 
   if (memoryCache.data && (now - memoryCache.timestamp < CACHE_TTL_MS)) {
     return {
@@ -386,7 +385,7 @@ export async function getFeaturedChannelsFeed() {
     };
   }
 
-  if (!apiKey) {
+  if (keys.length === 0) {
     const total = FALLBACK_FEATURED_CHANNELS.reduce((acc, s) => acc + s.channels.length, 0);
     return {
       success: true,
@@ -399,7 +398,7 @@ export async function getFeaturedChannelsFeed() {
   }
 
   try {
-    const sections = await fetchDiscoveredFeaturedChannels(apiKey);
+    const sections = await fetchDiscoveredFeaturedChannels();
     const totalChannels = sections.reduce((acc, s) => acc + s.channels.length, 0);
     const feedData = {
       sections,

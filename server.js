@@ -9,6 +9,7 @@ import { getLiveStreamData } from './api/_lib/youtubeLive.js';
 import { getVideosFeed } from './api/_lib/youtubeVideos.js';
 import { getPlaylistsFeed } from './api/_lib/youtubePlaylists.js';
 import { getFeaturedChannelsFeed } from './api/_lib/youtubeFeaturedChannels.js';
+import { youtubeGet, getYoutubeApiKeys, maskKey } from './api/_lib/youtubeClient.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -54,8 +55,9 @@ app.get('/api/subscribers', async (req, res) => {
   }
 
   // Check if API Key is configured
-  if (!API_KEY) {
-    console.warn('[YouTube Backend] Warning: YOUTUBE_API_KEY is not set in .env');
+  const keys = getYoutubeApiKeys();
+  if (keys.length === 0) {
+    console.warn('[YouTube Backend] Warning: No YouTube API key set in .env');
     return res.status(200).json({
       success: false,
       message: 'YOUTUBE_API_KEY is not configured in .env',
@@ -68,11 +70,10 @@ app.get('/api/subscribers', async (req, res) => {
 
   try {
     const youtubeUrl = 'https://www.googleapis.com/youtube/v3/channels';
-    const response = await axios.get(youtubeUrl, {
+    const response = await youtubeGet(youtubeUrl, {
       params: {
         part: 'statistics,snippet',
-        id: CHANNEL_ID,
-        key: API_KEY
+        id: CHANNEL_ID
       },
       timeout: 6000
     });
@@ -383,6 +384,7 @@ app.listen(PORT, () => {
   console.log(`📺 Videos Endpoint:      http://localhost:${PORT}/api/youtube/videos`);
   console.log(`📑 Playlists Endpoint:   http://localhost:${PORT}/api/youtube/playlists`);
   console.log(`👥 Channels Endpoint:    http://localhost:${PORT}/api/youtube/featured-channels`);
-  console.log(`🔒 YouTube API Key:      ${API_KEY ? 'Configured & Secured' : 'NOT SET in .env'}`);
+  const keys = getYoutubeApiKeys();
+  console.log(`🔒 YouTube API Keys:     ${keys.length > 0 ? `${keys.length} Key(s) Configured & Secured (Failover Enabled)` : 'NOT SET in .env'}`);
   console.log(`=============================================`);
 });
