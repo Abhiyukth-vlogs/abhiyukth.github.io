@@ -4,6 +4,7 @@ import { Odometer } from './components/odometer.js';
 import { ShortsSection } from './components/shortsSection.js';
 import { LiveSection } from './components/liveSection.js';
 import { FeaturedChannelsSection } from './components/featuredChannelsSection.js';
+import { debounce } from './utils/debounce.js';
 
 const BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || './';
 const FALLBACK_AVATAR = `${BASE}assets/avatar-fallback.svg`;
@@ -251,17 +252,25 @@ class App {
       });
     });
 
+    // Debounce the video catalog re-rendering to prevent expensive DOM reconstruction
+    // and layout recalculations on every keystroke
+    const debouncedRenderCatalog = debounce(() => {
+      this.renderVideoCatalog();
+    }, 180);
+
     // Real-time Search Input
     searchInput?.addEventListener('input', (e) => {
       this.searchQuery = e.target.value.trim().toLowerCase();
+      // Keep clear button visibility instant for responsive micro-feedback
       if (clearBtn) {
         clearBtn.style.display = this.searchQuery ? 'block' : 'none';
       }
-      this.renderVideoCatalog();
+      debouncedRenderCatalog();
     });
 
     // Clear Search Button
     clearBtn?.addEventListener('click', () => {
+      debouncedRenderCatalog.cancel();
       if (searchInput) searchInput.value = '';
       this.searchQuery = '';
       clearBtn.style.display = 'none';
@@ -271,6 +280,7 @@ class App {
 
     // Reset Filters Button in Empty State
     resetBtn?.addEventListener('click', () => {
+      debouncedRenderCatalog.cancel();
       this.activeCategory = 'All';
       this.searchQuery = '';
       if (searchInput) searchInput.value = '';
