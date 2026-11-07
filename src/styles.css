@@ -1296,9 +1296,18 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 1.2rem;
   cursor: pointer;
   line-height: 1;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), outline-color var(--transition-fast);
 }
 
 .search-clear-btn:hover {
+  color: var(--text-main);
+}
+
+.search-clear-btn:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 1px;
   color: var(--text-main);
 }
 
