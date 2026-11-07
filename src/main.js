@@ -251,6 +251,13 @@ class App {
       });
     });
 
+    const clearSearch = () => {
+      if (searchInput) searchInput.value = '';
+      this.searchQuery = '';
+      if (clearBtn) clearBtn.style.display = 'none';
+      this.renderVideoCatalog();
+    };
+
     // Real-time Search Input
     searchInput?.addEventListener('input', (e) => {
       this.searchQuery = e.target.value.trim().toLowerCase();
@@ -260,13 +267,18 @@ class App {
       this.renderVideoCatalog();
     });
 
+    // Escape key shortcut to instantly clear search query
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && (this.searchQuery || (searchInput && searchInput.value))) {
+        e.preventDefault();
+        clearSearch();
+      }
+    });
+
     // Clear Search Button
     clearBtn?.addEventListener('click', () => {
-      if (searchInput) searchInput.value = '';
-      this.searchQuery = '';
-      clearBtn.style.display = 'none';
+      clearSearch();
       searchInput?.focus();
-      this.renderVideoCatalog();
     });
 
     // Reset Filters Button in Empty State
