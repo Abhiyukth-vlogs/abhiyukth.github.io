@@ -27,8 +27,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+          token: ${{ secrets.GH_PAT || secrets.PERSONAL_ACCESS_TOKEN || secrets.PAT || github.token }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -59,7 +61,8 @@ jobs:
             echo "Changes detected in YouTube content. Staging and committing..."
             git add src/data/channel.js
             git commit -m "chore(auto-sync): update latest YouTube content (videos, shorts, live, playlists, featured channels)"
-            git push origin main
+            git pull --rebase origin main
+            git push origin HEAD:main
             echo "Pushed changes to main branch. Vercel Git integration will automatically build and deploy."
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
@@ -80,7 +83,7 @@ jobs:
           fi
 
       - name: Direct Deploy via Vercel CLI (If Token Configured)
-        if: (steps.git_push.outputs.has_changes == 'true' || github.event.inputs.force_deploy == 'true') && env.VERCEL_TOKEN != ''
+        if: (steps.git_push.outputs.has_changes == 'true' || github.event.inputs.force_deploy == 'true') && secrets.VERCEL_TOKEN != ''
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
