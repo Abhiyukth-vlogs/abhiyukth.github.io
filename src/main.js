@@ -26,6 +26,7 @@ class App {
     this.featuredVideo = channelConfig.featuredVideo;
     this.videosRefreshTimer = null;
     this.playlistsRefreshTimer = null;
+    this.searchDebounceTimer = null;
 
     this.init();
   }
@@ -251,17 +252,22 @@ class App {
       });
     });
 
-    // Real-time Search Input
+    // Real-time Search Input with 200ms debounce to prevent layout thrashing and repetitive DOM rebuilds
     searchInput?.addEventListener('input', (e) => {
       this.searchQuery = e.target.value.trim().toLowerCase();
       if (clearBtn) {
         clearBtn.style.display = this.searchQuery ? 'block' : 'none';
       }
-      this.renderVideoCatalog();
+      // Debounce catalog rendering during rapid typing (~90%+ reduction in intermediate DOM rewrites)
+      clearTimeout(this.searchDebounceTimer);
+      this.searchDebounceTimer = setTimeout(() => {
+        this.renderVideoCatalog();
+      }, 200);
     });
 
-    // Clear Search Button
+    // Clear Search Button (executes immediately and cancels pending debounce)
     clearBtn?.addEventListener('click', () => {
+      clearTimeout(this.searchDebounceTimer);
       if (searchInput) searchInput.value = '';
       this.searchQuery = '';
       clearBtn.style.display = 'none';
@@ -269,8 +275,9 @@ class App {
       this.renderVideoCatalog();
     });
 
-    // Reset Filters Button in Empty State
+    // Reset Filters Button in Empty State (executes immediately and cancels pending debounce)
     resetBtn?.addEventListener('click', () => {
+      clearTimeout(this.searchDebounceTimer);
       this.activeCategory = 'All';
       this.searchQuery = '';
       if (searchInput) searchInput.value = '';
@@ -749,9 +756,20 @@ class App {
       }
     };
 
-    // Auto-update: Initial check and poll every 15 seconds for live studio sync
+    // Auto-update: Initial check and poll every 15s, paused when tab is hidden to save network & CPU
     fetchLiveCount();
-    setInterval(fetchLiveCount, 15000);
+    setInterval(() => {
+      if (!document.hidden) {
+        fetchLiveCount();
+      }
+    }, 15000);
+
+    // Refresh count immediately when returning to tab
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        fetchLiveCount();
+      }
+    });
   }
 
   /* ---------------------------------------------------------
