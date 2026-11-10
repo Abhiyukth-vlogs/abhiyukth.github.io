@@ -26,6 +26,7 @@ class App {
     this.featuredVideo = channelConfig.featuredVideo;
     this.videosRefreshTimer = null;
     this.playlistsRefreshTimer = null;
+    this.searchDebounceTimer = null;
 
     this.init();
   }
@@ -251,17 +252,25 @@ class App {
       });
     });
 
-    // Real-time Search Input
+    // Real-time Search Input with Debouncing (Bolt ⚡: Prevents excessive layout thrashing & DOM re-renders on every keystroke)
     searchInput?.addEventListener('input', (e) => {
       this.searchQuery = e.target.value.trim().toLowerCase();
       if (clearBtn) {
         clearBtn.style.display = this.searchQuery ? 'block' : 'none';
       }
-      this.renderVideoCatalog();
+      if (this.searchDebounceTimer) {
+        clearTimeout(this.searchDebounceTimer);
+      }
+      this.searchDebounceTimer = setTimeout(() => {
+        this.renderVideoCatalog();
+      }, 150);
     });
 
     // Clear Search Button
     clearBtn?.addEventListener('click', () => {
+      if (this.searchDebounceTimer) {
+        clearTimeout(this.searchDebounceTimer);
+      }
       if (searchInput) searchInput.value = '';
       this.searchQuery = '';
       clearBtn.style.display = 'none';
@@ -271,6 +280,9 @@ class App {
 
     // Reset Filters Button in Empty State
     resetBtn?.addEventListener('click', () => {
+      if (this.searchDebounceTimer) {
+        clearTimeout(this.searchDebounceTimer);
+      }
       this.activeCategory = 'All';
       this.searchQuery = '';
       if (searchInput) searchInput.value = '';
