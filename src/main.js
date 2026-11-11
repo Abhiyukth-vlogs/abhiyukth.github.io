@@ -9,6 +9,28 @@ const BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.me
 const FALLBACK_AVATAR = `${BASE}assets/avatar-fallback.svg`;
 
 /**
+ * Debounce helper: Delays invoking fn until after wait milliseconds have elapsed
+ * since the last invocation. Reduces expensive DOM reflows during rapid user input.
+ */
+function debounce(fn, wait) {
+  let timeoutId = null;
+  const debounced = function (...args) {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      timeoutId = null;
+      fn.apply(this, args);
+    }, wait);
+  };
+  debounced.cancel = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+  };
+  return debounced;
+}
+
+/**
  * Main Application Orchestrator for Abhiyukth Vlogs
  */
 
@@ -251,17 +273,23 @@ class App {
       });
     });
 
-    // Real-time Search Input
+    // Debounced video catalog renderer (150ms) to prevent DOM thrashing on rapid typing
+    const debouncedRenderCatalog = debounce(() => {
+      this.renderVideoCatalog();
+    }, 150);
+
+    // Real-time Search Input: update UI toggle instantly, debounce expensive grid re-render
     searchInput?.addEventListener('input', (e) => {
       this.searchQuery = e.target.value.trim().toLowerCase();
       if (clearBtn) {
         clearBtn.style.display = this.searchQuery ? 'block' : 'none';
       }
-      this.renderVideoCatalog();
+      debouncedRenderCatalog();
     });
 
-    // Clear Search Button
+    // Clear Search Button: cancel pending debounce and render immediately
     clearBtn?.addEventListener('click', () => {
+      debouncedRenderCatalog.cancel();
       if (searchInput) searchInput.value = '';
       this.searchQuery = '';
       clearBtn.style.display = 'none';
@@ -269,8 +297,9 @@ class App {
       this.renderVideoCatalog();
     });
 
-    // Reset Filters Button in Empty State
+    // Reset Filters Button in Empty State: cancel pending debounce and render immediately
     resetBtn?.addEventListener('click', () => {
+      debouncedRenderCatalog.cancel();
       this.activeCategory = 'All';
       this.searchQuery = '';
       if (searchInput) searchInput.value = '';
@@ -522,12 +551,17 @@ class App {
     const mobileLinks = document.querySelectorAll('.mobile-nav-link');
     const navLinks = document.querySelectorAll('.nav-link');
 
-    // Sticky header shadow on scroll
+    // Sticky header shadow on scroll (guarded state avoids redundant classList mutations on every scroll tick)
+    let isHeaderScrolled = false;
     window.addEventListener('scroll', () => {
-      if (window.scrollY > 20) {
-        header?.classList.add('scrolled');
-      } else {
-        header?.classList.remove('scrolled');
+      const shouldBeScrolled = window.scrollY > 20;
+      if (shouldBeScrolled !== isHeaderScrolled) {
+        isHeaderScrolled = shouldBeScrolled;
+        if (shouldBeScrolled) {
+          header?.classList.add('scrolled');
+        } else {
+          header?.classList.remove('scrolled');
+        }
       }
     }, { passive: true });
 
